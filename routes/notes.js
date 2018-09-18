@@ -37,9 +37,13 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
 
-  console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
+  if(!req.body.title) res.status(400).json({message: 'Missing title field'});
 
+  Note.create(req.body)
+    .then(note => {
+      res.location(`${req.url}/${note._id}`).json(note);
+    })
+    .catch(err => next(err));
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
