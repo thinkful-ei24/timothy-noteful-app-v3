@@ -11,8 +11,21 @@ router.get('/', (req, res, next) => {
     let filter = {};
 
     if (searchTerm) {
-      const re = new RegExp(searchTerm, i);
-      filter.title = { $regex: re };
+      const re = new RegExp(searchTerm, 'i');
+      filter.$or = [ 
+        {
+          title: 
+          { 
+            $regex: re 
+          }
+        }, 
+        {
+          content: 
+          {
+            $regex: re
+          }
+        }
+      ];
     }
 
     Note.find(filter).sort({updatedAt: 1})
