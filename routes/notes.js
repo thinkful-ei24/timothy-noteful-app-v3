@@ -24,8 +24,14 @@ router.get('/', (req, res, next) => {
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
+  const id = req.params.id;
 
-    
+  Note.findById(id)
+    .then(note => {
+      if(!note) return next();
+      else res.json(note);
+    })
+    .catch(err => next(err));
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
