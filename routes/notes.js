@@ -70,7 +70,7 @@ router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
   Note.findByIdAndRemove(id)
-    .then(() => res.statusStatus(204))
+    .then(() => res.sendStatus(204))
     .catch(err => next(err));
 });
 
