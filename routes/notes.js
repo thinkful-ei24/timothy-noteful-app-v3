@@ -13,25 +13,13 @@ router.get('/', (req, res, next) => {
     if (searchTerm) {
       const re = new RegExp(searchTerm, 'i');
       filter.$or = [ 
-        {
-          title: 
-          { 
-            $regex: re 
-          }
-        }, 
-        {
-          content: 
-          {
-            $regex: re
-          }
-        }
+        {title: {$regex: re }}, 
+        {content: {$regex: re }}
       ];
     }
 
     Note.find(filter).sort({updatedAt: 1})
-      .then(notes => {
-        res.json(notes);
-      })
+      .then(notes => res.json(notes))
       .catch(err => next(err));
 });
 
@@ -49,13 +37,11 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-
+  const newNote = req.body;
   if(!req.body.title) res.status(400).json({message: 'Missing title field'});
 
-  Note.create(req.body)
-    .then(note => {
-      res.location(`${req.originalUrl}/${note._id}`).json(note);
-    })
+  Note.create(newNote)
+    .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
     .catch(err => next(err));
 });
 
@@ -65,7 +51,7 @@ router.put('/:id', (req, res, next) => {
   const update = {};
   const updateableFields = ['title', 'content'];
 
-  if(!req.body.title) return res.status(400).json({message: 'Missing title field'});
+  if('title' in req.body && req.body.title === '') res.status(400).json({message: 'Missing title field'});
 
   updateableFields.forEach(field => {
     if(field in req.body) update[field] = req.body[field];
@@ -84,7 +70,7 @@ router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
   Note.findByIdAndRemove(id)
-    .then(() => res.status(204).end())
+    .then(() => res.statusStatus(204))
     .catch(err => next(err));
 });
 
