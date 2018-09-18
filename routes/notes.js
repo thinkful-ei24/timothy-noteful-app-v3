@@ -64,6 +64,9 @@ router.put('/:id', (req, res, next) => {
   const id = req.params.id;
   const update = {};
   const updateableFields = ['title', 'content'];
+
+  if(!req.body.title) return res.status(400).json({message: 'Missing title field'});
+
   updateableFields.forEach(field => {
     if(field in req.body) update[field] = req.body[field];
   });
