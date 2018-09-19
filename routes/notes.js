@@ -41,7 +41,7 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const newNote = req.body;
-  if(!req.body.title) res.status(400).json({message: 'Missing title field'});
+  if(!req.body.title || req.body.title === '') return res.status(400).json({message: 'Missing title field'});
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
