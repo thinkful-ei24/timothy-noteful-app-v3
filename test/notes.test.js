@@ -254,5 +254,25 @@ describe('Noteful API', function(){
 
   });
 
+  describe('DELETE note endpoint', function(){
+    
+    it('should response with a 204 and delete the specified note from the collection', function(){
+      let id; 
+      return Note.find({})
+      .then(notes => {
+        id = notes[0].id;
+        return chai.request(app)
+          .delete(`/api/notes/${id}`)
+      })
+          .then(()=> {
+            return Note.findById(id)
+          })
+            .then(note => {
+              expect(note).to.be.null;
+            });
+    });
+
+  });
+
 
 });
