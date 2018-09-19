@@ -97,35 +97,38 @@ describe('Noteful API', function(){
 
     it('should return a 200 status given a valid id', function(){
 
+
       return Note.find({})
-      .then(notes => {
-        const id = notes[0].id;
-        return chai.request(app)
+        .then(notes => {
+          const id = notes[0].id;
+          return chai.request(app)
           .get(`/api/notes/${id}`)
-          .then(res => {
-            expect(res).to.have.status(200);
-            expect(res).to.be.json;
-            expect(res.body).to.be.an('object');
-          });
-      });
+        }) 
+        .then(res => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+        });
     });
 
     it('should return the correct note given a valid id', function(){
       const fields = ['id', 'title', 'content'];
+      let id;
+      let res;
       return Note.find({})
-      .then(notes => {
-        const id = notes[0].id;
-        return chai.request(app)
-          .get(`/api/notes/${id}`)
-          .then(res => {
-            return Note.findById(id)
-              .then(note => {
-                fields.forEach(key => {
-                  expect(note[key]).to.equal(res.body[key]);
-                });
-              });
+        .then(notes => {
+          id = notes[0].id;
+          return chai.request(app).get(`/api/notes/${id}`);
+        })    
+        .then(_res => {
+          res = _res;
+          return Note.findById(id)
+        })  
+        .then(note => {
+          fields.forEach(key => {
+            expect(note[key]).to.equal(res.body[key]);
           });
-      });
+        });
     });
 
     it('should response with a 404 given an id that does not exist', function(){
@@ -224,13 +227,12 @@ describe('Noteful API', function(){
           return chai.request(app)
             .put(`/api/notes/${id}`)
             .send(newnote)
-            .then(res => {
-              expect(res).to.have.status(200);
-              expect(res).to.be.json;
-              expect(res.body).to.contain.keys('id', 'title', 'content');
-            });
         })
-
+        .then(res => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.contain.keys('id', 'title', 'content');
+        });
     });
 
 
@@ -247,16 +249,16 @@ describe('Noteful API', function(){
           return chai.request(app)
             .put(`/api/notes/${id}`)
             .send(newnote)
-            .then(()=> {
-              return Note.findById(id);
-            })
-            .then(note => {
-              Object.keys(newnote).forEach(key => {
-                expect(note[key]).to.equal(newnote[key]);
-              });
-            });
-        });      
-    });
+        }) 
+        .then(()=> {
+          return Note.findById(id);
+        })
+        .then(note => {
+          Object.keys(newnote).forEach(key => {
+            expect(note[key]).to.equal(newnote[key]);
+          });
+        });
+    });      
 
     it('should response with a 404 for an id that does not exist', function(){
       const badId = 'DOESNOTEXIST';
@@ -267,7 +269,7 @@ describe('Noteful API', function(){
 
       return chai.request(app)
         .put(`/api/notes/${badId}`)
-        .send(newnote)
+        .send(newnote) 
         .then(res => {
           expect(res).to.have.status(404);
         });
@@ -301,14 +303,13 @@ describe('Noteful API', function(){
           return chai.request(app)
             .put(`/api/notes/${id}`)
             .send(invalidnote)
-            .then(res => {
-              expect(res).to.have.status(400);
-              expect(res).to.be.json;
-              expect(res.body).to.include.keys('message');
-            });
+        })   
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.include.keys('message');
         });
-      });
-
+    });
   });
 
   describe('DELETE note endpoint', function(){
