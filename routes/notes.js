@@ -32,7 +32,10 @@ router.get('/:id', (req, res, next) => {
       if(!note) return next();
       else res.json(note);
     })
-    .catch(err => next(err));
+    .catch(err => {
+      err.status(400);
+      next(err);
+    });
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
@@ -62,7 +65,10 @@ router.put('/:id', (req, res, next) => {
       if(!note) return next();
       res.json(note);
     })
-    .catch(err => next(err));
+    .catch(err => {
+      err.status = 400;
+      next(err);
+    });
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
