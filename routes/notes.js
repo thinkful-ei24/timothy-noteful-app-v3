@@ -33,7 +33,7 @@ router.get('/:id', (req, res, next) => {
       else res.json(note);
     })
     .catch(err => {
-      err.status(400);
+      err.status = 400;
       next(err);
     });
 });

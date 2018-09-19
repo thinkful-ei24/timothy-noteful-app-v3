@@ -32,7 +32,7 @@ describe('Noteful API', function(){
         return mongoose.disconnect();
       });
     
-  describe('GET Notes endpoint', function(){
+  describe('GET notes endpoint', function(){
 
     it('should return the correct number of notes', function(){
 
@@ -93,7 +93,64 @@ describe('Noteful API', function(){
 
   });
 
-  describe('Post Note endpoint', function(){
+  describe('GET note by id endpoint', function(){
+
+    it('should return a 200 status given a valid id', function(){
+
+      return Note.find({})
+      .then(notes => {
+        const id = notes[0].id;
+        return chai.request(app)
+          .get(`/api/notes/${id}`)
+          .then(res => {
+            expect(res).to.have.status(200);
+            expect(res).to.be.json;
+            expect(res.body).to.be.an('object');
+          });
+      });
+    });
+
+    it('should return the correct note given a valid id', function(){
+      const fields = ['id', 'title', 'content'];
+      return Note.find({})
+      .then(notes => {
+        const id = notes[0].id;
+        return chai.request(app)
+          .get(`/api/notes/${id}`)
+          .then(res => {
+            return Note.findById(id)
+              .then(note => {
+                fields.forEach(key => {
+                  expect(note[key]).to.equal(res.body[key]);
+                });
+              });
+          });
+      });
+    });
+
+    it('should response with a 404 given an id that does not exist', function(){
+      const invalidid = 'DOESNOTEXIST';
+
+      return chai.request(app)
+        .get(`/api/notes/${invalidid}`)
+        .then(res => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should response with a 400 given an invalid id', function(){
+      const invalidid = 'invalid';
+
+      return chai.request(app)
+        .get(`/api/notes/${invalidid}`)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+    });
+
+  });
+
+  describe('POST note endpoint', function(){
 
     it('should return the note in the response when provided a valid note', function(){
       const newnote = {
