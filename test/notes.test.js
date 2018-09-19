@@ -313,7 +313,7 @@ describe('Noteful API', function(){
 
   describe('DELETE note endpoint', function(){
     
-    it('should response with a 204 and delete the specified note from the collection', function(){
+    it('should respond with a 204 status and delete the specified note from the collection', function(){
       let id; 
       return Note.find({})
       .then(notes => {
@@ -321,12 +321,12 @@ describe('Noteful API', function(){
         return chai.request(app)
           .delete(`/api/notes/${id}`)
       })
-          .then(()=> {
-            return Note.findById(id)
-          })
-            .then(note => {
-              expect(note).to.be.null;
-            });
+      .then(()=> {
+        return Note.findById(id)
+      })
+      .then(note => {
+        expect(note).to.be.null;
+      });
     });
 
   });
