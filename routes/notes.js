@@ -3,6 +3,7 @@
 const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
+const isValid = require('mongoose').Types.ObjectId.isValid;
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -27,21 +28,28 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
 
+  if(!isValid(id)) {
+    const err = new Error('Id is invalid');
+    err.status = 400;
+    return next(err);
+  }
+
   Note.findById(id)
     .then(note => {
       if(!note) return next();
       else res.json(note);
     })
-    .catch(err => {
-      err.status = 400;
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const newNote = req.body;
-  if(!req.body.title || req.body.title.trim() === '') return res.status(400).json({message: 'Missing title field'});
+  if(!req.body.title || req.body.title.trim() === '') {
+    const err = new Error('Missing title field');
+    err.status = 400;
+    return next(err);
+  }
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
@@ -53,8 +61,18 @@ router.put('/:id', (req, res, next) => {
   const id = req.params.id;
   const update = {};
   const updateableFields = ['title', 'content'];
+  
+  if(!isValid(id)) {
+    const err = new Error('Id is invalid');
+    err.status = 400;
+    return next(err);
+  }
 
-  if('title' in req.body && req.body.title.trim() === '') res.status(400).json({message: 'Missing title field'});
+  if('title' in req.body && req.body.title.trim() === '') {
+    const err = new Error('Missing title field');
+    err.status = 400;
+    return next(err);
+  }
 
   updateableFields.forEach(field => {
     if(field in req.body) update[field] = req.body[field];
@@ -65,10 +83,7 @@ router.put('/:id', (req, res, next) => {
       if(!note) return next();
       res.json(note);
     })
-    .catch(err => {
-      err.status = 400;
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */

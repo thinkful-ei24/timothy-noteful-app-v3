@@ -14,7 +14,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
     const notePromise = Note.insertMany(notes);
     const folderPromise = Folder.insertMany(folders);
 
-    return Promise.all([notePromise, folderPromise]);
+    return Promise.all([notePromise, folderPromise, Folder.createIndexes()]);
   })
   .then(([notes, folders]) => {
     console.info(`Inserted ${notes.length} Notes & ${folders.length} Folders`);
