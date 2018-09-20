@@ -67,7 +67,7 @@ describe('Noteful API', function(){
     });
 
     it('should return correct search results for valid query', function(){
-      const fields = ['id', 'title', 'content']
+      const fields = ['id', 'title', 'content'];
       const searchTerm = 'about cats';
       let resnote;
       
@@ -83,6 +83,23 @@ describe('Noteful API', function(){
             expect(resnote[key]).to.equal(dbnote[key]);
           });
         });
+    });
+
+    it('should return the correct number of results given a valid folderId filter', function(){
+      
+      return Folder.findOne()
+        .then(folder => {
+          const id = folder.id;
+
+          const queryPromise = Note.find({folderId: id});
+          const reqPromise = chai.request(app).get('/api/notes').query({folderId: id});
+
+          return Promise.all([reqPromise, queryPromise]);
+        })
+        .then(([res, notes]) => {
+          expect(res.body.length).to.equal(notes.length);
+        });
+
     });
 
     it('should return an empty array for an incorrect search term', function(){
@@ -217,6 +234,22 @@ describe('Noteful API', function(){
         });
     });
 
+    it('should return an error if request provides an invalid folderId', function(){
+      const invalidFolderId = 'invalid';
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId: invalidFolderId
+      };
+
+      return chai.request(app)
+        .post('/api/notes')
+        .send(newNote)
+        .then(res => { 
+          expect(res).to.have.status(400);
+        });
+    });
+
   });
 
   describe('PUT endpoint', function(){
@@ -292,6 +325,28 @@ describe('Noteful API', function(){
       return chai.request(app)
         .put(`/api/notes/${invalidid}`)
         .send(newnote)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+    });
+
+    it('should return 400 if request provides an invalid folderId', function(){
+      const invalidFolderId = 'invalid';
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId: invalidFolderId
+      };
+
+      let id;
+
+      return Note.findOne({})
+        .then(note => {
+          id = note.id;
+          return chai.request(app)
+            .put(`/api/notes/${id}`)
+            .send(newNote)
+        })   
         .then(res => {
           expect(res).to.have.status(400);
         });

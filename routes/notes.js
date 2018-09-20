@@ -9,8 +9,12 @@ const isValid = require('mongoose').Types.ObjectId.isValid;
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
 
-  const searchTerm = req.query.searchTerm;
+  const { folderId, searchTerm } = req.query;
   let filter = {};
+
+  if(folderId) {
+    filter.folderId = folderId;
+  }
 
   if (searchTerm) {
     const re = new RegExp(searchTerm, 'i');
@@ -52,6 +56,12 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
+  if('folderId' in req.body && !isValid(req.body.folderId)){
+    const err = new Error('Invalid folder id');
+    err.status = 400;
+    return next(err);
+  }
+
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
     .catch(err => next(err));
@@ -61,7 +71,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
   const update = {};
-  const updateableFields = ['title', 'content'];
+  const updateableFields = ['title', 'content', 'folderId'];
   
   if(!isValid(id)) {
     const err = new Error('Id is invalid');
@@ -75,6 +85,11 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
+  if('folderId' in req.body && !isValid(req.body.folderId)){
+    const err = new Error('Invalid folder id');
+    err.status = 400;
+    return next(err);
+  }
   updateableFields.forEach(field => {
     if(field in req.body) update[field] = req.body[field];
   });
