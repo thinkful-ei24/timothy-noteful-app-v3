@@ -82,16 +82,16 @@ const Note = require('../models/note');
 
 let id; 
 mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
-    .then(() => {
-         return Note.findOne();     
-    })
-    .then(note => {
-        id = note._id;
-        console.log(id);
-        return Note.findByIdAndRemove(id);
-    })
-    .then(() => {
-        return Note.findById(id).count();
-    })
-    .then(count => console.log(count))
-    .catch(err => console.error(err));
+  .then(() => {
+    return Note.findOne();     
+  })
+  .then(note => {
+    id = note._id;
+    console.log(id);
+    return Note.findByIdAndRemove(id);
+  })
+  .then(() => {
+    return Note.findById(id).count();
+  })
+  .then(count => console.log(count))
+  .catch(err => console.error(err));

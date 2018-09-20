@@ -8,19 +8,19 @@ const router = express.Router();
 router.get('/', (req, res, next) => {
 
   const searchTerm = req.query.searchTerm;
-    let filter = {};
+  let filter = {};
 
-    if (searchTerm) {
-      const re = new RegExp(searchTerm, 'i');
-      filter.$or = [ 
-        {title: {$regex: re }}, 
-        {content: {$regex: re }}
-      ];
-    }
+  if (searchTerm) {
+    const re = new RegExp(searchTerm, 'i');
+    filter.$or = [ 
+      {title: {$regex: re }}, 
+      {content: {$regex: re }}
+    ];
+  }
 
-    Note.find(filter).sort({updatedAt: 1})
-      .then(notes => res.json(notes))
-      .catch(err => next(err));
+  Note.find(filter).sort({updatedAt: 1})
+    .then(notes => res.json(notes))
+    .catch(err => next(err));
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
@@ -41,7 +41,7 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const newNote = req.body;
-  if(!req.body.title || req.body.title === '') return res.status(400).json({message: 'Missing title field'});
+  if(!req.body.title || req.body.title.trim() === '') return res.status(400).json({message: 'Missing title field'});
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
@@ -54,7 +54,7 @@ router.put('/:id', (req, res, next) => {
   const update = {};
   const updateableFields = ['title', 'content'];
 
-  if('title' in req.body && req.body.title === '') res.status(400).json({message: 'Missing title field'});
+  if('title' in req.body && req.body.title.trim() === '') res.status(400).json({message: 'Missing title field'});
 
   updateableFields.forEach(field => {
     if(field in req.body) update[field] = req.body[field];
