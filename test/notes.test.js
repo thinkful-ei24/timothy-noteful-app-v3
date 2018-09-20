@@ -37,7 +37,7 @@ describe('Noteful API', function(){
     it('should return the correct number of notes', function(){
 
       const reqPromise =  chai.request(app).get('/api/notes');
-      const queryPromise = Note.find().count();
+      const queryPromise = Note.find({}).count();
 
       return Promise.all([reqPromise, queryPromise])
         .then(([res, dbCount]) => {
@@ -48,7 +48,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('it should return an array of objects with fields id, title and content', function(){
+    it('should return an array of objects with fields id, title and content', function(){
       
       return chai.request(app)
         .get('/api/notes')
@@ -96,7 +96,7 @@ describe('Noteful API', function(){
 
   describe('GET note by id endpoint', function(){
 
-    it('should return a 200 status given a valid id', function(){
+    it('should return 200 and an object with fields id, title & content given a valid id', function(){
 
       return Note.find({})
         .then(notes => {
@@ -108,6 +108,7 @@ describe('Noteful API', function(){
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys('id', 'title', 'content');
         });
     });
 
@@ -131,7 +132,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should response with a 404 given an id that does not exist', function(){
+    it('should respond with 404 given an id that does not exist', function(){
       const nonexistentId = 'DOESNOTEXIST';
 
       return chai.request(app)
@@ -141,7 +142,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should response with a 400 given an invalid id', function(){
+    it('should respond with 400 given an invalid id', function(){
       const invalidId = 'invalid';
 
       return chai.request(app)
@@ -175,7 +176,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should create a new note in the notes collection when provided a valid note', function(){
+    it('should insert a new note into the notes collection when provided a valid note', function(){
       const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
@@ -214,7 +215,7 @@ describe('Noteful API', function(){
 
   describe('PUT endpoint', function(){
 
-    it('should should respond with a 200 and the correct fields when request is valid', function(){
+    it('should respond with 200 and the correct fields when request is valid', function(){
 
       const updatedNote = {
         title: 'The New Colossus',
@@ -263,7 +264,7 @@ describe('Noteful API', function(){
         });
     });      
 
-    it('should response with a 404 for an id that does not exist', function(){
+    it('should respond with 404 for an id that does not exist', function(){
       const nonexistentId = 'DOESNOTEXIST';
       const updatedNote = {
         title: 'The New Colossus',
@@ -278,7 +279,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should response with a 400 when provided an invalid id string', function(){
+    it('should respond with 400 when provided an invalid id string', function(){
       const invalidId = 'invalid';
       const updatedNote = {
         title: 'The New Colossus',
@@ -293,7 +294,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should response with an error message when missing a title field', function(){
+    it('should respond with an error message when missing a title field', function(){
       const invalidNote = {
         title: '',
         content: 'Not like the brazen giant of Greek fame...'
@@ -317,7 +318,7 @@ describe('Noteful API', function(){
 
   describe('DELETE note endpoint', function(){
     
-    it('should respond with a 204 status and delete the specified note from the collection', function(){
+    it('should return 204 and delete the specified note from the collection', function(){
       let id; 
       return Note.find({})
         .then(notes => {
