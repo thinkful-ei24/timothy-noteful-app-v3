@@ -56,7 +56,7 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  if('folderId' in req.body && !isValid(req.body.folderId)){
+  if(req.body.folderId && !isValid(req.body.folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
@@ -85,7 +85,7 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  if('folderId' in req.body && !isValid(req.body.folderId)){
+  if(req.body.folderId && !isValid(req.body.folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
