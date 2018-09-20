@@ -26,7 +26,7 @@ describe('Folders API', function(){
         return Promise.all([
           Note.insertMany(notes),
           Folder.insertMany(folders),
-          Folder.createIndexes(),
+          Folder.createIndexes()
         ]);
       });
     
@@ -162,6 +162,64 @@ describe('Folders API', function(){
               expect(res).to.have.status(400);
           })
         });
+      });
+
+      describe('PUT folder endpoint', function(){
+        
+        it('should return 200 and update the specified note in the collection', function(){
+          const newFolder = {
+            name: 'New Folder'
+          };
+          let id;
+          return Folder.findOne({})
+            .then(folder => {
+              id = folder.id;
+
+              return chai.request(app)
+                .put(`/api/folders/${id}`)
+                .send(newFolder)
+            })
+            .then(res => {
+              expect(res).to.have.status(200);
+              expect(res.body).to.include.keys('id', 'name');
+              return Folder.findById(id)
+            })
+            .then(folder => {
+              expect(folder.name).to.be.equal(newFolder.name);
+            });
+            
+        });
+
+        it('should return 404 given a nonexistent id', function(){
+          const newFolder = {
+            name: 'New Folder'
+          };
+
+          const nonexistentId = 'DOESNOTEXIST';
+
+          return chai.request(app)
+            .put(`/api/folders/${nonexistentId}`)
+            .send(newFolder)
+            .then(res => {
+              expect(res).to.have.status(404);
+            });
+
+        });
+
+        it('should return 400 given an invalid id string', function(){
+          const newFolder = {
+            name: 'New Folder'
+          };
+          const invalidId = 'invalidid';
+          return chai.request(app)
+            .put(`/api/folders/${invalidId}`)
+            .send(newFolder)
+            .then(res => {
+              expect(res).to.have.status(400);
+            });
+
+        });
+
       });
 
 });
