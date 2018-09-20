@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+// const Folder = require('../models/folder');
 const Note = require('../models/note');
 const router = express.Router();
 const isValid = require('mongoose').Types.ObjectId.isValid;
