@@ -222,4 +222,28 @@ describe('Folders API', function(){
 
       });
 
+      describe('DELETE folder endpoint', function(){
+
+        it('should return 204 and delete the specified note from the collection', function(){
+          let id;
+
+          return Folder.findOne({})
+            .then(folder => {
+              id = folder.id;
+              
+              return chai.request(app)
+                .delete(`/api/folders/${id}`)
+            })
+            .then((res) => {
+              expect(res).to.have.status(204);
+
+              return Folder.findById(id)
+            })
+            .then(folder => {
+              expect(folder).to.be.null;
+            });
+        });
+
+      });
+
 });
