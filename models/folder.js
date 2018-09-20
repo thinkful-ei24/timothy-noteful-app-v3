@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const foldersSchema = new mongoose.Schema(
     {
-        name: String
+        name: {type: String, required: true}
     }
 );
 
