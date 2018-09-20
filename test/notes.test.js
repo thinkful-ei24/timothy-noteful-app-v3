@@ -15,22 +15,22 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('Noteful API', function(){
-    before(function () {
-        return mongoose.connect(TEST_MONGODB_URI)
-          .then(() => mongoose.connection.db.dropDatabase());
-      });
+  before(function () {
+    return mongoose.connect(TEST_MONGODB_URI)
+      .then(() => mongoose.connection.db.dropDatabase());
+  });
     
-      beforeEach(function () {
-        return Note.insertMany(notes);
-      });
+  beforeEach(function () {
+    return Note.insertMany(notes);
+  });
     
-      afterEach(function () {
-        return mongoose.connection.db.dropDatabase();
-      });
+  afterEach(function () {
+    return mongoose.connection.db.dropDatabase();
+  });
     
-      after(function () {
-        return mongoose.disconnect();
-      });
+  after(function () {
+    return mongoose.disconnect();
+  });
     
   describe('GET notes endpoint', function(){
 
@@ -61,7 +61,7 @@ describe('Noteful API', function(){
     });
 
     it('should return correct search results for valid query', function(){
-      const fields = ['id', 'title', 'content']
+      const fields = ['id', 'title', 'content'];
       const searchTerm = 'about cats';
       let resnote;
       return chai.request(app)
@@ -69,7 +69,7 @@ describe('Noteful API', function(){
         .query({searchTerm: searchTerm})
         .then(res => {
           resnote = res.body[0];
-          return Note.findById(resnote.id)
+          return Note.findById(resnote.id);
         })
         .then(dbnote => {
           fields.forEach(key => {
@@ -102,7 +102,7 @@ describe('Noteful API', function(){
         .then(notes => {
           const id = notes[0].id;
           return chai.request(app)
-          .get(`/api/notes/${id}`)
+            .get(`/api/notes/${id}`);
         }) 
         .then(res => {
           expect(res).to.have.status(200);
@@ -122,7 +122,7 @@ describe('Noteful API', function(){
         })    
         .then(_res => {
           res = _res;
-          return Note.findById(id)
+          return Note.findById(id);
         })  
         .then(note => {
           fields.forEach(key => {
@@ -171,7 +171,7 @@ describe('Noteful API', function(){
           expect(res.body).to.include.keys('id', 'title', 'content');
           Object.keys(newnote).forEach(key => {
             expect(res.body[key]).to.equal(newnote[key]);
-          })
+          });
         });
     });
 
@@ -186,13 +186,13 @@ describe('Noteful API', function(){
         .send(newnote)
         .then(res => {
           const id = res.body.id;
-          return Note.findById(id)
+          return Note.findById(id);
         })
         .then(note => {
           Object.keys(newnote).forEach(key => {
             expect(note[key]).to.equal(newnote[key]);
           });
-        })
+        });
     });
 
     it('should return an error when the request doesnt provide a title field', function(){
@@ -226,7 +226,7 @@ describe('Noteful API', function(){
           const id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote)
+            .send(newnote);
         })
         .then(res => {
           expect(res).to.have.status(200);
@@ -248,7 +248,7 @@ describe('Noteful API', function(){
           id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote)
+            .send(newnote);
         }) 
         .then(()=> {
           return Note.findById(id);
@@ -302,7 +302,7 @@ describe('Noteful API', function(){
           id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(invalidnote)
+            .send(invalidnote);
         })   
         .then(res => {
           expect(res).to.have.status(400);
@@ -317,17 +317,17 @@ describe('Noteful API', function(){
     it('should respond with a 204 status and delete the specified note from the collection', function(){
       let id; 
       return Note.find({})
-      .then(notes => {
-        id = notes[0].id;
-        return chai.request(app)
-          .delete(`/api/notes/${id}`)
-      })
-      .then(()=> {
-        return Note.findById(id)
-      })
-      .then(note => {
-        expect(note).to.be.null;
-      });
+        .then(notes => {
+          id = notes[0].id;
+          return chai.request(app)
+            .delete(`/api/notes/${id}`);
+        })
+        .then(()=> {
+          return Note.findById(id);
+        })
+        .then(note => {
+          expect(note).to.be.null;
+        });
     });
 
   });
