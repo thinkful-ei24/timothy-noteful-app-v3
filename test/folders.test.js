@@ -23,6 +23,7 @@ describe('Folders API', function(){
   });
 
   beforeEach(function(){
+    this.timeout(5000);
     return Promise.all([
       Note.insertMany(notes),
       Folder.insertMany(folders),

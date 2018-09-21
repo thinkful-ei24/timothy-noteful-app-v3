@@ -90,5 +90,26 @@ router.put('/:id', (req, res, next) => {
     });
 });
 
+router.delete('/:id', (req, res, next) => {
+  const id = req.params.id;
+  
+  if(!isValid(id)) {
+    const err = new Error('The tag id is invalid');
+    err.status = 400;
+    return next(err);
+  }
+
+  Tag.findByIdAndRemove(id)
+    .then(() => {
+      Note.updateMany(
+        {folderId: ObjectId(id)}, 
+        {$unset: {folderId: ''}});
+    })
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch(err => next(err));
+
+});
 
 module.exports = router;
