@@ -58,7 +58,36 @@ router.post('/', (req, res, next) => {
 
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
+  const name = req.body.name;
 
+  if(!isValid(id)) {
+    const err = new Error('The tag id is invalid');
+    err.status = 400;
+    return next(err);
+  }
+
+  if(!name || name.trim() === ''){
+    const err = new Error('The tag is missing a name');
+    err.status = 400;
+    return next(err);
+  }
+
+  Tag.findByIdAndUpdate(
+      id, 
+      {$set: {name: name}},
+      {new: true}
+    )
+    .then(tag => {
+      if(!tag) return next();
+      else res.json(tag);
+    })
+    .catch(err => {
+      if(err.code === 11000) {
+        err = new Error('The tag name already exists');
+        err.status = 400;
+      }
+      next(err);
+    });
 });
 
 
