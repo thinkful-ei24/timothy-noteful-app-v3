@@ -9,7 +9,7 @@ const isValid = require('mongoose').Types.ObjectId.isValid;
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
 
-  const { folderId, searchTerm } = req.query;
+  const { folderId, searchTerm, tagId } = req.query;
   let filter = {};
 
   if(folderId) {
@@ -24,7 +24,12 @@ router.get('/', (req, res, next) => {
     ];
   }
 
-  Note.find(filter).sort({updatedAt: 1})
+  if(tagId) {
+    filter.tags = tagId
+  };
+
+  Note.find(filter)
+    .sort({updatedAt: 1})
     .then(notes => res.json(notes))
     .catch(err => next(err));
 });
@@ -40,6 +45,7 @@ router.get('/:id', (req, res, next) => {
   }
 
   Note.findById(id)
+    .populate('tags')
     .then(note => {
       if(!note) return next();
       else res.json(note);
@@ -49,18 +55,37 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const newNote = req.body;
-  if(!req.body.title || req.body.title.trim() === '') {
+  const { title, content, folderId, tags } = req.body;
+
+  if(!title || title.trim() === '') {
     const err = new Error('Missing title field');
     err.status = 400;
     return next(err);
   }
 
-  if(req.body.folderId && !isValid(req.body.folderId)){
+  if(folderId && !isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
   }
+
+  if(tags){
+    tags.forEach(tag => {
+      if(!isValid(tag)){
+        const err = new Error('At least one of the tag ids is not valid');
+        err.status = 400;
+        console.log(err.message);
+        return next(err);
+      }
+    });
+  }
+
+  const newNote = {
+    title: title,
+    content: content,
+    folderId: folderId ? folderId : null,
+    tags: tags
+  };
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
@@ -70,8 +95,10 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
+  const folderId = req.body.folderId;
+  const tags = req.body.tags;
   const update = {};
-  const updateableFields = ['title', 'content', 'folderId'];
+  const updateableFields = ['title', 'content', 'folderId', 'tags'];
   
   if(!isValid(id)) {
     const err = new Error('Id is invalid');
@@ -85,13 +112,25 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  if(req.body.folderId && !isValid(req.body.folderId)){
+  if(folderId && !isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
   }
+
+  if(tags){
+    tags.forEach(tag => {
+      if(!isValid(tag)){
+        const err = new Error('At least one of the tag ids is not valid');
+        err.status = 400;
+        console.log(err.message);
+        return next(err);
+      }
+    });
+  }
+
   updateableFields.forEach(field => {
-    if(field in req.body) update[field] = req.body[field];
+    if(req.body[field]) update[field] = req.body[field];
   });
 
   Note.findByIdAndUpdate(id, {$set: update}, {new: true})

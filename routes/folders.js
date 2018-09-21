@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
+const ObjectId = require('mongoose').Types.ObjectId;
 const isValid = require('mongoose').Types.ObjectId.isValid;
 
 
@@ -89,17 +90,28 @@ router.put('/:id', (req, res, next) => {
 });
 
 router.delete('/:id', (req, res, next) => {
-  const id = req.params.id;
+  const folderId = req.params.id;
   
-  if(!isValid(id)) {
+  if(!isValid(folderId)) {
     const err = new Error('Id is invalid');
     err.status = 400;
     return next(err);
   }
 
-  Folder.findByIdAndRemove(id)
+  Folder.findById(folderId)
+    .then(folder => {
+      if(!folder) {
+        const err = new Error('Folder not found');
+        err.status = 404;
+        return Promise.reject(err);
+      }
+      return folder.remove();
+    })
     .then(() => {
-      Note.updateMany({folderId: id}, { $unset: {name: ''}});
+      return Note.updateMany({folderId: folderId}, {$unset: {folderId: ''}});
+      // Note.updateMany(
+      //   {folderId: folderId}, 
+      //   {$set: {folderId: ''}});
     })
     .then(() => {
       res.sendStatus(204);

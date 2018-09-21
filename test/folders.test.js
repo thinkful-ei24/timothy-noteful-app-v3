@@ -9,20 +9,21 @@ const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folder');
-
 const { folders, notes } = require('../db/seed/notes');
-
 
 const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('Folders API', function(){
   before(function () {
+    this.timeout(4000);
+
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
   beforeEach(function(){
+    this.timeout(5000);
     return Promise.all([
       Note.insertMany(notes),
       Folder.insertMany(folders),
@@ -120,7 +121,7 @@ describe('Folders API', function(){
 
   describe('POST folder endpoint', function(){
 
-    it('should return the new in response when provided a valid folder', function(){
+    it('should return the new folder when provided a valid folder', function(){
       const validFolder = {
         name: 'Projects'
       };
@@ -135,7 +136,7 @@ describe('Folders API', function(){
         });
     });
 
-    it('should insert a new folder into the folders collection', function(){
+    it('should insert the new folder into the folders collection', function(){
       const validFolder = {
         name: 'Projects'
       };
@@ -242,6 +243,25 @@ describe('Folders API', function(){
         .then(folder => {
           expect(folder).to.be.null;
         });
+    });
+
+    it('should set folder id fields in associated notes to null', function(){
+      let id;
+  
+      return Folder.findOne({})
+        .then(folder => {
+          id = folder.id;
+
+          return chai.request(app)
+            .delete(`/api/folders/${id}`);
+        })
+        .then(res => {
+          return Note.find({folderId: id})
+        })
+        .then(notes => {
+          expect(notes.length).to.equal(0);
+        });
+  
     });
 
   });
