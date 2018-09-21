@@ -13,7 +13,8 @@ const notesSchema = new mongoose.Schema(
 notesSchema.set('timestamps', true);
 
 notesSchema.set('toObject', {
-  virtuals: true,     // include built-in virtual `id`  // remove `__v` version key
+  virtuals: true, 
+  versionKey: false,    // include built-in virtual `id`  // remove `__v` version key
   transform: (doc, ret) => {
     delete ret._id, // delete `_id`
     delete ret._v;

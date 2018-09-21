@@ -81,24 +81,24 @@ const Note = require('../models/note');
 // delete a note by id 
 
 // let id; 
-mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
-  .then(()=> {
-    const searchTerm = 'cats';
-    const re = new RegExp(searchTerm, 'i');
+// mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
+//   .then(()=> {
+//     const searchTerm = 'cats';
+//     const re = new RegExp(searchTerm, 'i');
     
-    const filter = {
-      $or: [
-        {title: {$regex: re}},
-        {content: {$regex: re}}
-      ]
-    };
-    return Note.find(filter)
-      .sort({updatedAt: 1});
-  })
-  .then(notes => {
-    console.log(notes[0].id);
+//     const filter = {
+//       $or: [
+//         {title: {$regex: re}},
+//         {content: {$regex: re}}
+//       ]
+//     };
+//     return Note.find(filter)
+//       .sort({updatedAt: 1});
+//   })
+//   .then(notes => {
+//     console.log(notes[0].id);
 
-  });
+//   });
 //   .then(() => {
 //     return Note.findOne();     
 //   })
@@ -113,3 +113,10 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
 //   .then(count => console.log(count))
 //   .catch(err => console.error(err));
 
+mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
+  .then(()=> {
+    return Note.updateMany({folderId: '111111111111111111111100'}, {$unset: {folderId: ''}});
+  })
+  .then(notes => {
+    console.log(notes);
+  });

@@ -245,24 +245,24 @@ describe('Folders API', function(){
         });
     });
 
-    // it('should set folder id fields in associated notes to null', function(){
-    //   let id;
+    it('should set folder id fields in associated notes to null', function(){
+      let id;
   
-    //   return Folder.findOne({})
-    //     .then(folder => {
-    //       id = folder.id;
-    //       console.log(id);
-    //       return chai.request(app)
-    //         .delete(`/api/folders/${id}`);
-    //     })
-    //     .then(res => {
-    //       return Note.find({folderId: mongoose.Types.ObjectId(id)})
-    //     })
-    //     .then(notes => {
-    //       expect(notes.length).to.equal(0);
-    //     });
+      return Folder.findOne({})
+        .then(folder => {
+          id = folder.id;
+
+          return chai.request(app)
+            .delete(`/api/folders/${id}`);
+        })
+        .then(res => {
+          return Note.find({folderId: id})
+        })
+        .then(notes => {
+          expect(notes.length).to.equal(0);
+        });
   
-    // });
+    });
 
   });
 

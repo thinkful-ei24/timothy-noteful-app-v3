@@ -238,11 +238,41 @@ describe('Tags API', function(){
     beforeEach(function(){
 
 
+
     });
 
-    it('should remove tag from collection', function(){
+    it('should remove tag from collection and pull tag from notes', function(){
+      let id;
 
+      return Tag.findOne()
+        .then(tag => {
+          id = tag.id;
 
+          return chai.request(app)
+            .delete(`/api/tags/${id}`);
+        })
+        .then(res => {
+          expect(res).to.have.status(204);
+          const notesPromise = Note.find({tags: id});
+          const tagsPromise = Tag.findById(id);
+          return Promise.all([notesPromise, tagsPromise]);
+        })
+        .then(([notes, tag]) =>{
+          expect(notes.length).to.equal(0);
+          expect(tag).to.be.null;
+        });
+
+    });
+
+    
+    it('should return 400 if id is invalid', function(){
+      const invalidId = 'invalid';
+
+      return chai.request(app)
+        .delete(`/api/tags/${invalidId}`)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
     });
 
   });

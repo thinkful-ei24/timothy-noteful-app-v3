@@ -101,11 +101,14 @@ router.delete('/:id', (req, res, next) => {
 
   Tag.findById(id)
     .then((tag) => {
-      if(!tag) return next();
+      if(!tag) {
+        const err = new Error('Tag not found');
+        err.status = 404;
+        return Promise.reject(err);
+      };
       return tag.remove();
     })
     .then(() => {
-
       return Note.updateMany(
         {}, 
         {$pull: {tags: id}});
