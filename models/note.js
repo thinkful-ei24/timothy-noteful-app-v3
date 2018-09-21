@@ -19,15 +19,4 @@ notesSchema.set('toObject', {
   }
 });
 
-notesSchema.methods.serialize = function(){
-  return {
-    id: this.id.toString(),
-    title: this.title,
-    content: this.content,
-    folderId: this.folderId,
-    createdAt: this.createdAt,
-    updatedAt: this.updatedAt
-  };
-};
-
 module.exports = mongoose.model('Note', notesSchema);

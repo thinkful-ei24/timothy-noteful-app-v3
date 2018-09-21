@@ -71,7 +71,7 @@ describe('Noteful API', function(){
     });
 
     it('should return correct search results for valid query', function(){
-      // const fields = ['id', 'title', 'content', 'folderId'];
+      const fields = ['title', 'content', 'folderId'];
       const searchTerm = 'about cats';
       const re = new RegExp(searchTerm, 'i');
       
@@ -87,13 +87,15 @@ describe('Noteful API', function(){
         .query({searchTerm: searchTerm});
 
       return Promise.all([reqPromise, queryPromise])
-        .then(([res, notes]) => {
-          expect(res.body.length).to.equal(notes.length);
-          // res.body.forEach((resNote, index) => {
-          //   fields.forEach(field => {
-          //     expect(resNote[field]).to.equal(notes[index][field]);
-          //   });
-          // });
+        .then(([res, dbNotes]) => {
+
+          expect(res.body.length).to.equal(dbNotes.length);
+          dbNotes.forEach((dbNote, index) => {
+            const resNote = res.body[index];
+            expect(dbNote.title).to.equal(resNote.title);
+            expect(dbNote.content).to.equal(resNote.content);
+
+          });
         });
     });
 
@@ -131,6 +133,7 @@ describe('Noteful API', function(){
   describe('GET note by id endpoint', function(){
 
     it('should return 200 given a valid id', function(){
+      const fields = ['id', 'title', 'content', 'folderId'];
 
       return Note.find({})
         .then(notes => {
@@ -142,41 +145,40 @@ describe('Noteful API', function(){
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys(fields);
         });
     });
 
     it('should return the correct note given a valid id', function(){
-      const fields = ['id', 'title', 'content', 'folderId'];
       let note;
 
       return Note.findOne()
         .then(_note => {
-          note = { ..._note, { folderId: _note.folderId.toString()}};
-          const id = note.id;
+          note = _note;
+          const id = note.id
           return chai.request(app).get(`/api/notes/${id}`);
         })    
         .then(res => {
-          fields.forEach(key => {
-            expect(note[key]).to.equal(res.body[key]);
-          });
+          expect(note.title).to.equal(res.body.title);
+          expect(note.id).to.equal(res.body.id);
         });
     });
 
-    it('should response with a 404 given an id that does not exist', function(){
-      const invalidid = 'DOESNOTEXIST';
+    it('should return 404 given an id that does not exist', function(){
+      const nonexistentId = 'DOESNOTEXIST';
 
       return chai.request(app)
-        .get(`/api/notes/${invalidid}`)
+        .get(`/api/notes/${nonexistentId}`)
         .then(res => {
           expect(res).to.have.status(404);
         });
     });
 
-    it('should response with a 400 given an invalid id', function(){
-      const invalidid = 'invalid';
+    it('should return 400 given an invalid id', function(){
+      const invalidId = 'invalid';
 
       return chai.request(app)
-        .get(`/api/notes/${invalidid}`)
+        .get(`/api/notes/${invalidId}`)
         .then(res => {
           expect(res).to.have.status(400);
         });
@@ -186,58 +188,58 @@ describe('Noteful API', function(){
 
   describe('POST note endpoint', function(){
 
-    it('should return the note in the response when provided a valid note', function(){
-      const newnote = {
+    it('should return the note when provided a valid note', function(){
+      const fields = ['id', 'title', 'content', 'folderId'];
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
 
       return chai.request(app)
         .post('/api/notes')
-        .send(newnote)
+        .send(newNote)
         .then(res => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
-          expect(res.body).to.include.keys('id', 'title', 'content');
-          Object.keys(newnote).forEach(key => {
-            expect(res.body[key]).to.equal(newnote[key]);
+          expect(res.body).to.include.keys(fields);
+          Object.keys(newNote).forEach(key => {
+            expect(res.body[key]).to.equal(newNote[key]);
           });
         });
     });
 
-    it('should create a new note in the notes collection when provided a valid note', function(){
-      const newnote = {
+    it('should insert new note in the notes collection when provided a valid note', function(){
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
 
       return chai.request(app)
         .post('/api/notes')
-        .send(newnote)
+        .send(newNote)
         .then(res => {
           const id = res.body.id;
           return Note.findById(id);
         })
         .then(note => {
-          Object.keys(newnote).forEach(key => {
-            expect(note[key]).to.equal(newnote[key]);
+          Object.keys(newNote).forEach(key => {
+            expect(note[key]).to.equal(newNote[key]);
           });
         });
     });
 
-    it('should return an error when the request doesnt provide a title field', function(){
-      const invalidnote = {
+    it('should return an error when the request doesnt provide a title', function(){
+      const invalidNote = {
         content: 'Not like the brazen giant of Greek fame...'
       };
 
       return chai.request(app)
         .post('/api/notes')
-        .send(invalidnote)
+        .send(invalidNote)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res).to.be.json;
-          expect(res.body).to.contain.key('message');
         });
     });
 
@@ -261,30 +263,30 @@ describe('Noteful API', function(){
 
   describe('PUT endpoint', function(){
 
-    it('should should respond with a success status and provide the correct fields when provided a valid put request', function(){
+    it('should should return 200 and provide the correct fields', function(){
+      const fields = ['id', 'title', 'content', 'folderId'];
 
-      const newnote = {
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
 
-      return Note.find({})
-        .then(notes => {
-          const id = notes[0].id;
+      return Note.findOne({})
+        .then(note => {
+          const id = note.id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote);
+            .send(newNote);
         })
         .then(res => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
-          expect(res.body).to.contain.keys('id', 'title', 'content');
+          expect(res.body).to.contain.keys(fields);
         });
     });
 
-
-    it('should update the specified note in the collection when provided a valid request', function(){
-      const newnote = {
+    it('should update the specified note in the collection', function(){
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
@@ -295,43 +297,43 @@ describe('Noteful API', function(){
           id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote);
+            .send(newNote);
         }) 
         .then(()=> {
           return Note.findById(id);
         })
         .then(note => {
-          Object.keys(newnote).forEach(key => {
-            expect(note[key]).to.equal(newnote[key]);
+          Object.keys(newNote).forEach(key => {
+            expect(note[key]).to.equal(newNote[key]);
           });
         });
     });      
 
-    it('should response with a 404 for an id that does not exist', function(){
-      const badId = 'DOESNOTEXIST';
-      const newnote = {
+    it('should return 404 for an id that does not exist', function(){
+      const nonexistentId = 'DOESNOTEXIST';
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
 
       return chai.request(app)
-        .put(`/api/notes/${badId}`)
-        .send(newnote) 
+        .put(`/api/notes/${nonexistentId}`)
+        .send(newNote) 
         .then(res => {
           expect(res).to.have.status(404);
         });
     });
 
-    it('should response with a 400 when provided an invalid id string', function(){
-      const invalidid = 'invalid';
-      const newnote = {
+    it('should return 400 when provided an invalid id string', function(){
+      const invalidId = 'invalid';
+      const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
       };
 
       return chai.request(app)
-        .put(`/api/notes/${invalidid}`)
-        .send(newnote)
+        .put(`/api/notes/${invalidId}`)
+        .send(newNote)
         .then(res => {
           expect(res).to.have.status(400);
         });
@@ -359,35 +361,35 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should response with an error message when missing a title field', function(){
-      const invalidnote = {
+    it('should return an error message when missing a title field', function(){
+      const invalidNote = {
         title: '',
         content: 'Not like the brazen giant of Greek fame...'
       };
       let id;
 
-      return Note.find({})
-        .then(notes => {
-          id = notes[0].id;
+      return Note.findOne({})
+        .then(note => {
+          id = note.id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(invalidnote);
+            .send(invalidNote);
         })   
         .then(res => {
           expect(res).to.have.status(400);
           expect(res).to.be.json;
-          expect(res.body).to.include.keys('message');
+          expect(res.body).to.include.key('message');
         });
     });
   });
 
   describe('DELETE note endpoint', function(){
     
-    it('should respond with a 204 status and delete the specified note from the collection', function(){
+    it('should return 204 and delete the specified note from the collection', function(){
       let id; 
-      return Note.find({})
-        .then(notes => {
-          id = notes[0].id;
+      return Note.findOne()
+        .then(note => {
+          id = note.id;
           return chai.request(app)
             .delete(`/api/notes/${id}`);
         })
@@ -398,7 +400,6 @@ describe('Noteful API', function(){
           expect(note).to.be.null;
         });
     });
-
   });
 
 
