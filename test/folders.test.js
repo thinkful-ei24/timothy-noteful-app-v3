@@ -243,24 +243,26 @@ describe('Folders API', function(){
           expect(folder).to.be.null;
         });
     });
+
+    // it('should set folder id fields in associated notes to null', function(){
+    //   let id;
+  
+    //   return Folder.findOne({})
+    //     .then(folder => {
+    //       id = folder.id;
+    //       console.log(id);
+    //       return chai.request(app)
+    //         .delete(`/api/folders/${id}`);
+    //     })
+    //     .then(res => {
+    //       return Note.find({folderId: mongoose.Types.ObjectId(id)})
+    //     })
+    //     .then(notes => {
+    //       expect(notes.length).to.equal(0);
+    //     });
+  
+    // });
+
   });
 
-  it('should set folder id fields in associated notes to null', function(){
-    let id;
-
-    return Folder.findOne({})
-      .then(folder => {
-        id = folder.id;
-        console.log(id);
-        return chai.request(app)
-          .delete(`/api/folders/${id}`);
-      })
-      .then(res => {
-        return Note.find({folderId: mongoose.Types.ObjectId(id)})
-      })
-      .then(notes => {
-        expect(notes.length).to.equal(0);
-      });
-
-  });
 });
