@@ -233,4 +233,18 @@ describe('Tags API', function(){
     });
   });
 
+  describe('DELETE tag endpoint', function(){
+
+    beforeEach(function(){
+
+
+    });
+
+    it('should remove tag from collection', function(){
+
+
+    });
+
+  });
+
 });

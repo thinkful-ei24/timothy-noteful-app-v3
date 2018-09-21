@@ -99,11 +99,16 @@ router.delete('/:id', (req, res, next) => {
     return next(err);
   }
 
-  Tag.findByIdAndRemove(id)
+  Tag.findById(id)
+    .then((tag) => {
+      if(!tag) return next();
+      return tag.remove();
+    })
     .then(() => {
-      Note.updateMany(
-        {folderId: ObjectId(id)}, 
-        {$unset: {folderId: ''}});
+
+      return Note.updateMany(
+        {}, 
+        {$pull: {tags: id}});
     })
     .then(() => {
       res.sendStatus(204);
