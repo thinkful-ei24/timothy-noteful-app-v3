@@ -165,4 +165,72 @@ describe('Tags API', function(){
     });
   });
 
+  describe('PUT tag endpoint', function(){
+
+    const updatedTag = {
+      name: 'newname'
+    };
+
+    it('should update the tag in collection', function(){
+      let id;
+
+      return Tag.findOne()
+        .then(tag => {
+          id = tag.id;
+
+          return chai.request(app)
+            .put(`/api/tags/${id}`)
+            .send(updatedTag);
+        })
+        .then(res => {
+          expect(res).to.have.status(200);
+          expect(res.body.name).to.equal(updatedTag.name);
+          return Tag.findById(id);
+        })
+        .then(dbTag => {
+          expect(dbTag.name).to.equal(updatedTag.name);
+        });
+    });
+
+    it('should return 404 if id is non-existent', function(){
+      const nonexistentId = 'DOESNOTEXIST';
+
+      return chai.request(app)
+        .put(`/api/tags/${nonexistentId}`)
+        .send(updatedTag)
+        .then(res => {
+          expect(res).to.have.status(404);
+        })
+    });
+
+    it('should return 400 if id is invalid', function(){
+      const invalidId = 'invalid';
+
+      return chai.request(app)
+        .put(`/api/tags/${invalidId}`)
+        .send(updatedTag)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+    });
+
+    it('should return 400 is name is missing', function(){
+      const invalidTag = {
+        name: ' '
+      };
+
+      return Tag.findOne()
+        .then(tag => {
+          const id = tag.id;
+          return chai.request(app)
+            .put(`/api/tags/${id}`)
+            .send(invalidTag);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+
+    });
+  });
+
 });
