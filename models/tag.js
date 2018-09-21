@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const tagsSchema = new mongoose.Schema(
   {
-    title : {type: String, required: true, unique: true}
+    name : {type: String, required: true, unique: true}
   }
 );
 
