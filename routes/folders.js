@@ -99,7 +99,7 @@ router.delete('/:id', (req, res, next) => {
 
   Folder.findByIdAndRemove(id)
     .then(() => {
-      Note.updateMany({folderId: id}, { $unset: {name: ''}});
+      Note.updateMany({folderId: id}, { $unset: {folderId: ''}});
     })
     .then(() => {
       res.sendStatus(204);
