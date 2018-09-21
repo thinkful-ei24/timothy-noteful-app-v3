@@ -52,7 +52,7 @@ describe('Folders API', function(){
         });
     });
 
-    it('should return an array of folder objects with id and name fields', function(){
+    it('should return an array of folders with correct fields', function(){
 
       return chai.request(app)
         .get('/api/folders')
@@ -136,7 +136,7 @@ describe('Folders API', function(){
         });
     });
 
-    it('should insert the new folder into the folders collection', function(){
+    it('should insert the folder into the collection', function(){
       const validFolder = {
         name: 'Projects'
       };
@@ -153,7 +153,7 @@ describe('Folders API', function(){
         });
     });
     
-    it('should return 400 when the request doesnt provide a name', function(){
+    it('should return 400 if name field is missing', function(){
       const invalidFolder = {};
 
       return chai.request(app)
@@ -167,7 +167,7 @@ describe('Folders API', function(){
 
   describe('PUT folder endpoint', function(){
     
-    it('should return 200 and update the specified note in the collection', function(){
+    it('should update the note in the collection', function(){
       const newFolder = {
         name: 'New Folder'
       };
@@ -225,7 +225,7 @@ describe('Folders API', function(){
 
   describe('DELETE folder endpoint', function(){
 
-    it('should return 204 and delete the specified note from the collection', function(){
+    it('should delete the note from the collection', function(){
       let id;
 
       return Folder.findOne({})
@@ -245,7 +245,7 @@ describe('Folders API', function(){
         });
     });
 
-    it('should set folder id fields in associated notes to null', function(){
+    it('should set folder id fields in notes to null', function(){
       let id;
   
       return Folder.findOne({})

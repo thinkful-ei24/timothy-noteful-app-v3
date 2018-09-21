@@ -19,7 +19,7 @@ chai.use(chaiHttp);
 describe('Noteful API', function(){
   before(function () {
 
-    this.timeout(5000);
+    this.timeout(10000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
@@ -70,7 +70,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return correct search results for valid query', function(){
+    it('should return correct search results', function(){
       const fields = ['title', 'content', 'folderId'];
       const searchTerm = 'about cats';
       const re = new RegExp(searchTerm, 'i');
@@ -94,12 +94,11 @@ describe('Noteful API', function(){
             const resNote = res.body[index];
             expect(dbNote.title).to.equal(resNote.title);
             expect(dbNote.content).to.equal(resNote.content);
-
           });
         });
     });
 
-    it('should return the correct number of results given a valid folder id', function(){
+    it('should return the correct results if folder id is valid', function(){
       
       return Folder.findOne()
         .then(folder => {
@@ -109,8 +108,13 @@ describe('Noteful API', function(){
 
           return Promise.all([reqPromise, queryPromise]);
         })
-        .then(([res, notes]) => {
-          expect(res.body.length).to.equal(notes.length);
+        .then(([res, dbNotes]) => {
+          expect(res.body.length).to.equal(dbNotes.length);
+          res.body.forEach((resNote, index) => {
+            expect(resNote.title).to.equal(dbNotes[index].title);
+            expect(resNote.content).to.equal(dbNotes[index].content);
+            expect(resNote.tags.length).to.equal(dbNotes[index].tags.length);
+          });
         });
 
     });
@@ -132,35 +136,26 @@ describe('Noteful API', function(){
 
   describe('GET note by id endpoint', function(){
 
-    it('should return 200 given a valid id', function(){
-      const fields = ['id', 'title', 'content', 'folderId'];
-
-      return Note.find({})
-        .then(notes => {
-          const id = notes[0].id;
-          return chai.request(app)
-            .get(`/api/notes/${id}`);
-        }) 
-        .then(res => {
-          expect(res).to.have.status(200);
-          expect(res).to.be.json;
-          expect(res.body).to.be.an('object');
-          expect(res.body).to.include.keys(fields);
-        });
-    });
-
-    it('should return the correct note given a valid id', function(){
+    it('should return the correct note', function(){
+      const fields = ['id', 'title', 'content', 'folderId', 'tags'];
       let note;
 
       return Note.findOne()
+        .populate('tags')
         .then(_note => {
           note = _note;
           const id = note.id
           return chai.request(app).get(`/api/notes/${id}`);
         })    
         .then(res => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.include.keys(fields);
           expect(note.title).to.equal(res.body.title);
           expect(note.id).to.equal(res.body.id);
+          res.body.tags.forEach((tag, index) => {
+            expect(tag).to.deep.equal(note.tags[index]);
+          });
+          
         });
     });
 
@@ -189,10 +184,11 @@ describe('Noteful API', function(){
   describe('POST note endpoint', function(){
 
     it('should return the note when provided a valid note', function(){
-      const fields = ['id', 'title', 'content', 'folderId'];
+      const fields = ['id', 'title', 'content', 'folderId', 'tags'];
       const newNote = {
         title: 'The New Colossus',
-        content: 'Not like the brazen giant of Greek fame...'
+        content: 'Not like the brazen giant of Greek fame...',
+        tags: ['222222222222222222222200', '222222222222222222222201', '222222222222222222222202']
       };
 
       return chai.request(app)
@@ -204,12 +200,12 @@ describe('Noteful API', function(){
           expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys(fields);
           Object.keys(newNote).forEach(key => {
-            expect(res.body[key]).to.equal(newNote[key]);
+            expect(res.body[key]).to.deep.equal(newNote[key]);
           });
         });
     });
 
-    it('should insert new note in the notes collection when provided a valid note', function(){
+    it('should insert new note into the collection', function(){
       const newNote = {
         title: 'The New Colossus',
         content: 'Not like the brazen giant of Greek fame...'
@@ -229,7 +225,24 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return an error when the request doesnt provide a title', function(){
+    it('should return 400 if a tag id is invalid', function(){
+      const invalidNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        tags: ['222222222222222222222200', '222222222222222222222201', 'invalid']
+      };
+
+      return chai.request(app)
+        .post('/api/notes')
+        .send(invalidNote)
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+        });
+
+    });
+
+    it('should return 400 if title isnt given', function(){
       const invalidNote = {
         content: 'Not like the brazen giant of Greek fame...'
       };
@@ -243,7 +256,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return an error if request provides an invalid folderId', function(){
+    it('should return 400 if folder id is invalid', function(){
       const invalidFolderId = 'invalid';
       const newNote = {
         title: 'The New Colossus',
@@ -263,12 +276,13 @@ describe('Noteful API', function(){
 
   describe('PUT endpoint', function(){
 
-    it('should should return 200 and provide the correct fields', function(){
-      const fields = ['id', 'title', 'content', 'folderId'];
+    it('should return 200 and provide the correct fields', function(){
+      const fields = ['id', 'title', 'content', 'folderId', 'tags'];
 
       const newNote = {
         title: 'The New Colossus',
-        content: 'Not like the brazen giant of Greek fame...'
+        content: 'Not like the brazen giant of Greek fame...',
+        tags: ['222222222222222222222200', '222222222222222222222201', '222222222222222222222202']
       };
 
       return Note.findOne({})
@@ -288,7 +302,8 @@ describe('Noteful API', function(){
     it('should update the specified note in the collection', function(){
       const newNote = {
         title: 'The New Colossus',
-        content: 'Not like the brazen giant of Greek fame...'
+        content: 'Not like the brazen giant of Greek fame...',
+        tags: ['222222222222222222222200', '222222222222222222222201', '222222222222222222222202']
       };
       let id;
 
@@ -304,7 +319,11 @@ describe('Noteful API', function(){
         })
         .then(note => {
           Object.keys(newNote).forEach(key => {
-            expect(note[key]).to.equal(newNote[key]);
+            if(key !== 'tags') {
+              expect(note[key]).to.deep.equal(newNote[key]);
+            } else {
+              expect(note.tags).to.have.length(newNote.tags.length);
+            }
           });
         });
     });      
@@ -324,7 +343,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return 400 when provided an invalid id string', function(){
+    it('should return 400 if note id is invalid', function(){
       const invalidId = 'invalid';
       const newNote = {
         title: 'The New Colossus',
@@ -339,7 +358,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return 400 if request provides an invalid folderId', function(){
+    it('should return 400 if folderId is invalid', function(){
       const invalidFolderId = 'invalid';
       const newNote = {
         title: 'The New Colossus',
@@ -361,7 +380,7 @@ describe('Noteful API', function(){
         });
     });
 
-    it('should return an error message when missing a title field', function(){
+    it('should return 400 if the title is missing', function(){
       const invalidNote = {
         title: '',
         content: 'Not like the brazen giant of Greek fame...'
@@ -385,7 +404,7 @@ describe('Noteful API', function(){
 
   describe('DELETE note endpoint', function(){
     
-    it('should return 204 and delete the specified note from the collection', function(){
+    it('should delete the note from the collection', function(){
       let id; 
       return Note.findOne()
         .then(note => {
@@ -399,6 +418,26 @@ describe('Noteful API', function(){
         .then(note => {
           expect(note).to.be.null;
         });
+    });
+    
+    it('should return 404 if id doesnt exist', function(){
+      const nonexistentId = 'DOESNOTEXIST';
+
+      return chai.request(app)
+        .delete(`/api/notes/${nonexistentId}`)
+        .then (res => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should return 400 if id is invalid', function(){
+      const invalidId = 'invalid';
+
+      return chai.request(app)
+      .delete(`/api/notes/${invalidId}`)
+      .then (res => {
+        expect(res).to.have.status(400);
+      });
     });
   });
 

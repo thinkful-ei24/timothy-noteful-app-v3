@@ -237,8 +237,6 @@ describe('Tags API', function(){
 
     beforeEach(function(){
 
-
-
     });
 
     it('should remove tag from collection and pull tag from notes', function(){

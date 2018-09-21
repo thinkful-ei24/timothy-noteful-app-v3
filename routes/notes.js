@@ -145,7 +145,21 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
-  Note.findByIdAndRemove(id)
+  if(!isValid(id)){
+    const err = new Error('Id is invalid');
+    err.status = 400;
+    return next(err);
+  }
+
+  Note.findById(id)
+    .then(note => {
+      if(!note) {
+        const err = new Error('Not found');
+        err.status = 404;
+        return Promise.reject(err);
+      } 
+      return note.remove();
+    })
     .then(() => res.sendStatus(204))
     .catch(err => next(err));
 });
