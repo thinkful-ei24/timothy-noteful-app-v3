@@ -18,11 +18,14 @@ chai.use(chaiHttp);
 
 describe('Noteful API', function(){
   before(function () {
+
+    this.timeout(5000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
   beforeEach(function(){
+
     return Promise.all([
       Note.insertMany(notes),
       Folder.insertMany(folders),
@@ -54,43 +57,51 @@ describe('Noteful API', function(){
         });
     });
 
-    it('it should return an array of objects with fields id, title and content', function(){
+    it('should return an array of objects with correct fields', function(){
+      const fields = ['id', 'title', 'content', 'folderId'];
       
       return chai.request(app)
         .get('/api/notes')
         .then(res => {
           const notes = res.body;
           notes.forEach(note => {
-            expect(note).to.include.keys('id', 'title', 'content');
+            expect(note).to.include.keys(fields);
           });
         });
     });
 
     it('should return correct search results for valid query', function(){
-      const fields = ['id', 'title', 'content'];
+      // const fields = ['id', 'title', 'content', 'folderId'];
       const searchTerm = 'about cats';
-      let resNote;
+      const re = new RegExp(searchTerm, 'i');
       
-      return chai.request(app)
+      const filter = {
+        $or: [
+          {title: {$regex: re}},
+          {content: {$regex: re}}
+        ]
+      };
+      const queryPromise = Note.find(filter).sort({updatedAt: 1});
+      const reqPromise = chai.request(app)
         .get('/api/notes')
-        .query({searchTerm: searchTerm})
-        .then(res => {
-          resNote = res.body[0];
-          return Note.findById(resNote.id);
-        })
-        .then(dbNote => {
-          fields.forEach(key => {
-            expect(resNote[key]).to.equal(dbNote[key]);
-          });
+        .query({searchTerm: searchTerm});
+
+      return Promise.all([reqPromise, queryPromise])
+        .then(([res, notes]) => {
+          expect(res.body.length).to.equal(notes.length);
+          // res.body.forEach((resNote, index) => {
+          //   fields.forEach(field => {
+          //     expect(resNote[field]).to.equal(notes[index][field]);
+          //   });
+          // });
         });
     });
 
-    it('should return the correct number of results given a valid folderId filter', function(){
+    it('should return the correct number of results given a valid folder id', function(){
       
       return Folder.findOne()
         .then(folder => {
           const id = folder.id;
-
           const queryPromise = Note.find({folderId: id});
           const reqPromise = chai.request(app).get('/api/notes').query({folderId: id});
 
@@ -119,8 +130,7 @@ describe('Noteful API', function(){
 
   describe('GET note by id endpoint', function(){
 
-    it('should return a 200 status given a valid id', function(){
-
+    it('should return 200 given a valid id', function(){
 
       return Note.find({})
         .then(notes => {
@@ -136,19 +146,16 @@ describe('Noteful API', function(){
     });
 
     it('should return the correct note given a valid id', function(){
-      const fields = ['id', 'title', 'content'];
-      let id;
-      let res;
-      return Note.find({})
-        .then(notes => {
-          id = notes[0].id;
+      const fields = ['id', 'title', 'content', 'folderId'];
+      let note;
+
+      return Note.findOne()
+        .then(_note => {
+          note = { ..._note, { folderId: _note.folderId.toString()}};
+          const id = note.id;
           return chai.request(app).get(`/api/notes/${id}`);
         })    
-        .then(_res => {
-          res = _res;
-          return Note.findById(id);
-        })  
-        .then(note => {
+        .then(res => {
           fields.forEach(key => {
             expect(note[key]).to.equal(res.body[key]);
           });

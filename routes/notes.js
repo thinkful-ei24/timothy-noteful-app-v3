@@ -24,7 +24,8 @@ router.get('/', (req, res, next) => {
     ];
   }
 
-  Note.find(filter).sort({updatedAt: 1})
+  Note.find(filter)
+    .sort({updatedAt: 1})
     .then(notes => res.json(notes))
     .catch(err => next(err));
 });
@@ -49,18 +50,25 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const newNote = req.body;
-  if(!req.body.title || req.body.title.trim() === '') {
+  const { title, content, folderId } = req.body;
+
+  if(!title || title.trim() === '') {
     const err = new Error('Missing title field');
     err.status = 400;
     return next(err);
   }
 
-  if(req.body.folderId && !isValid(req.body.folderId)){
+  if(folderId && !isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
   }
+
+  const newNote = {
+    title: title,
+    content: content,
+    folderId: folderId ? folderId : null
+  };
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
@@ -70,6 +78,7 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
+  const folderId = req.body.folderId;
   const update = {};
   const updateableFields = ['title', 'content', 'folderId'];
   
@@ -85,13 +94,14 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  if(req.body.folderId && !isValid(req.body.folderId)){
+  if(folderId && !isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);
   }
+
   updateableFields.forEach(field => {
-    if(field in req.body) update[field] = req.body[field];
+    if(req.body[field]) update[field] = req.body[field];
   });
 
   Note.findByIdAndUpdate(id, {$set: update}, {new: true})

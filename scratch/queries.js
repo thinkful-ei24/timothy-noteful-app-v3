@@ -80,18 +80,36 @@ const Note = require('../models/note');
 
 // delete a note by id 
 
-let id; 
+// let id; 
 mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
-  .then(() => {
-    return Note.findOne();     
+  .then(()=> {
+    const searchTerm = 'cats';
+    const re = new RegExp(searchTerm, 'i');
+    
+    const filter = {
+      $or: [
+        {title: {$regex: re}},
+        {content: {$regex: re}}
+      ]
+    };
+    return Note.find(filter)
+      .sort({updatedAt: 1});
   })
-  .then(note => {
-    id = note._id;
-    console.log(id);
-    return Note.findByIdAndRemove(id);
-  })
-  .then(() => {
-    return Note.findById(id).count();
-  })
-  .then(count => console.log(count))
-  .catch(err => console.error(err));
+  .then(notes => {
+    console.log(notes[0].id);
+
+  });
+//   .then(() => {
+//     return Note.findOne();     
+//   })
+//   .then(note => {
+//     id = note._id;
+//     console.log(id);
+//     return Note.findByIdAndRemove(id);
+//   })
+//   .then(() => {
+//     return Note.findById(id).count();
+//   })
+//   .then(count => console.log(count))
+//   .catch(err => console.error(err));
+
