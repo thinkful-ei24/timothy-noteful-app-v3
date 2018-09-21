@@ -17,35 +17,35 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('Noteful API', function(){
-    before(function () {
-        return mongoose.connect(TEST_MONGODB_URI)
-          .then(() => mongoose.connection.db.dropDatabase());
-      });
-    
-      beforeEach(function(){
-        return Promise.all([
-          Note.insertMany(notes),
-          Folder.insertMany(folders),
-          Folder.createIndexes()
-        ]);
-      });
-    
-      afterEach(function () {
-        return mongoose.connection.db.dropDatabase();
-      });
-    
-      after(function () {
-        return mongoose.disconnect();
-      });
+  before(function () {
+    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
+      .then(() => mongoose.connection.db.dropDatabase());
+  });
+
+  beforeEach(function(){
+    return Promise.all([
+      Note.insertMany(notes),
+      Folder.insertMany(folders),
+      Folder.createIndexes()
+    ]);
+  });
+
+  afterEach(function () {
+    return mongoose.connection.db.dropDatabase();
+  });
+
+  after(function () {
+    return mongoose.disconnect();
+  });
     
   describe('GET notes endpoint', function(){
 
     it('should return the correct number of notes', function(){
 
-      const reqpromise =  chai.request(app).get('/api/notes');
-      const dbpromise = Note.find().count();
+      const reqPromise =  chai.request(app).get('/api/notes');
+      const dbPromise = Note.find().countDocuments();
 
-      return Promise.all([reqpromise, dbpromise])
+      return Promise.all([reqPromise, dbPromise])
         .then(([res, dbCount]) => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
@@ -69,18 +69,18 @@ describe('Noteful API', function(){
     it('should return correct search results for valid query', function(){
       const fields = ['id', 'title', 'content'];
       const searchTerm = 'about cats';
-      let resnote;
+      let resNote;
       
       return chai.request(app)
         .get('/api/notes')
         .query({searchTerm: searchTerm})
         .then(res => {
-          resnote = res.body[0];
-          return Note.findById(resnote.id)
+          resNote = res.body[0];
+          return Note.findById(resNote.id);
         })
-        .then(dbnote => {
+        .then(dbNote => {
           fields.forEach(key => {
-            expect(resnote[key]).to.equal(dbnote[key]);
+            expect(resNote[key]).to.equal(dbNote[key]);
           });
         });
     });
@@ -126,7 +126,7 @@ describe('Noteful API', function(){
         .then(notes => {
           const id = notes[0].id;
           return chai.request(app)
-          .get(`/api/notes/${id}`)
+            .get(`/api/notes/${id}`);
         }) 
         .then(res => {
           expect(res).to.have.status(200);
@@ -146,7 +146,7 @@ describe('Noteful API', function(){
         })    
         .then(_res => {
           res = _res;
-          return Note.findById(id)
+          return Note.findById(id);
         })  
         .then(note => {
           fields.forEach(key => {
@@ -195,7 +195,7 @@ describe('Noteful API', function(){
           expect(res.body).to.include.keys('id', 'title', 'content');
           Object.keys(newnote).forEach(key => {
             expect(res.body[key]).to.equal(newnote[key]);
-          })
+          });
         });
     });
 
@@ -210,13 +210,13 @@ describe('Noteful API', function(){
         .send(newnote)
         .then(res => {
           const id = res.body.id;
-          return Note.findById(id)
+          return Note.findById(id);
         })
         .then(note => {
           Object.keys(newnote).forEach(key => {
             expect(note[key]).to.equal(newnote[key]);
           });
-        })
+        });
     });
 
     it('should return an error when the request doesnt provide a title field', function(){
@@ -266,7 +266,7 @@ describe('Noteful API', function(){
           const id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote)
+            .send(newnote);
         })
         .then(res => {
           expect(res).to.have.status(200);
@@ -288,7 +288,7 @@ describe('Noteful API', function(){
           id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newnote)
+            .send(newnote);
         }) 
         .then(()=> {
           return Note.findById(id);
@@ -345,7 +345,7 @@ describe('Noteful API', function(){
           id = note.id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(newNote)
+            .send(newNote);
         })   
         .then(res => {
           expect(res).to.have.status(400);
@@ -364,7 +364,7 @@ describe('Noteful API', function(){
           id = notes[0].id;
           return chai.request(app)
             .put(`/api/notes/${id}`)
-            .send(invalidnote)
+            .send(invalidnote);
         })   
         .then(res => {
           expect(res).to.have.status(400);
@@ -379,17 +379,17 @@ describe('Noteful API', function(){
     it('should respond with a 204 status and delete the specified note from the collection', function(){
       let id; 
       return Note.find({})
-      .then(notes => {
-        id = notes[0].id;
-        return chai.request(app)
-          .delete(`/api/notes/${id}`)
-      })
-      .then(()=> {
-        return Note.findById(id)
-      })
-      .then(note => {
-        expect(note).to.be.null;
-      });
+        .then(notes => {
+          id = notes[0].id;
+          return chai.request(app)
+            .delete(`/api/notes/${id}`);
+        })
+        .then(()=> {
+          return Note.findById(id);
+        })
+        .then(note => {
+          expect(note).to.be.null;
+        });
     });
 
   });

@@ -18,7 +18,7 @@ chai.use(chaiHttp);
 
 describe('Folders API', function(){
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI)
+    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
@@ -42,7 +42,7 @@ describe('Folders API', function(){
 
     it('should return the correct number of folders', function(){
 
-      const queryPromise = Folder.find({}).count();
+      const queryPromise = Folder.find({}).countDocuments();
       const reqPromise = chai.request(app).get('/api/folders');
 
       return Promise.all([queryPromise, reqPromise])
