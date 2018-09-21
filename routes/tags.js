@@ -102,9 +102,7 @@ router.delete('/:id', (req, res, next) => {
   Tag.findById(id)
     .then((tag) => {
       if(!tag) {
-        const err = new Error('Tag not found');
-        err.status = 404;
-        return Promise.reject(err);
+        return Promise.reject();
       };
       return tag.remove();
     })

@@ -101,22 +101,19 @@ router.delete('/:id', (req, res, next) => {
   Folder.findById(folderId)
     .then(folder => {
       if(!folder) {
-        const err = new Error('Folder not found');
-        err.status = 404;
-        return Promise.reject(err);
+        return Promise.reject();
       }
       return folder.remove();
     })
     .then(() => {
-      return Note.updateMany({folderId: folderId}, {$unset: {folderId: ''}});
-      // Note.updateMany(
-      //   {folderId: folderId}, 
-      //   {$set: {folderId: ''}});
+      return Note.updateMany(
+        {folderId: folderId}, 
+        {$unset: {folderId: ''}});
     })
     .then(() => {
       res.sendStatus(204);
     })
-    .catch(err => next(err));
+    .catch(next);
 });
 
 module.exports = router;

@@ -154,14 +154,12 @@ router.delete('/:id', (req, res, next) => {
   Note.findById(id)
     .then(note => {
       if(!note) {
-        const err = new Error('Not found');
-        err.status = 404;
-        return Promise.reject(err);
+        return Promise.reject();
       } 
       return note.remove();
     })
     .then(() => res.sendStatus(204))
-    .catch(err => next(err));
+    .catch(next);
 });
 
 module.exports = router;
