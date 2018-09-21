@@ -69,22 +69,7 @@ describe('Folders API', function(){
 
   describe('GET folder by Id endpoint', function(){
 
-    it('should return 200 given a valid id', function(){
-
-      return Folder.findOne({})
-        .then(folder => {
-          const id = folder.id;
-          return chai.request(app)
-            .get(`/api/folders/${id}`);
-        })
-        .then(res => {
-          expect(res).to.have.status(200);
-          expect(res).to.be.json;
-          expect(res.body).to.include.keys('id', 'name');
-        });
-    });
-
-    it('should return correct folder given a valid id', function(){
+    it('should return correct folder', function(){
       let folder;
       return Folder.findOne({})
         .then(_folder => {
@@ -94,12 +79,14 @@ describe('Folders API', function(){
             .get(`/api/folders/${id}`);
         })
         .then(res => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.include.keys('id', 'name');
           expect(res.body.name).to.equal(folder.name);
           expect(res.body.id).to.equal(folder.id);  
         });
     });
 
-    it('should return 404 given a non-existent id', function(){
+    it('should return 404 if id is non-existent', function(){
       const nonexistentId = 'DOESNOTEXIST';
 
       return chai.request(app)
@@ -109,7 +96,7 @@ describe('Folders API', function(){
         });
     });
 
-    it('should return 400 given an invalid id string', function(){
+    it('should return 400 if the id is invalid', function(){
       const invalidId = 'invalidid';
       return chai.request(app)
         .get(`/api/folders/${invalidId}`)
