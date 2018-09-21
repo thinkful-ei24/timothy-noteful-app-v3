@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
+const ObjectId = require('mongoose').Types.ObjectId;
 const isValid = require('mongoose').Types.ObjectId.isValid;
 
 
@@ -99,7 +100,9 @@ router.delete('/:id', (req, res, next) => {
 
   Folder.findByIdAndRemove(id)
     .then(() => {
-      Note.updateMany({folderId: id}, { $unset: {folderId: ''}});
+      Note.updateMany(
+        {folderId: ObjectId(id)}, 
+        {$unset: {folderId: ''}});
     })
     .then(() => {
       res.sendStatus(204);

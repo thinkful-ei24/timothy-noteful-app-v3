@@ -7,8 +7,9 @@ const mongoose = require('mongoose');
 const app = require('../server');
 const { TEST_MONGODB_URI } = require('../config');
 
+const Note = require('../models/note');
 const Folder = require('../models/folder');
-const { folders } = require('../db/seed/notes');
+const { folders, notes } = require('../db/seed/notes');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -23,6 +24,7 @@ describe('Folders API', function(){
 
   beforeEach(function(){
     return Promise.all([
+      Note.insertMany(notes),
       Folder.insertMany(folders),
       Folder.createIndexes()
     ]);
@@ -243,4 +245,22 @@ describe('Folders API', function(){
     });
   });
 
+  it('should set folder id fields in associated notes to null', function(){
+    let id;
+
+    return Folder.findOne({})
+      .then(folder => {
+        id = folder.id;
+        console.log(id);
+        return chai.request(app)
+          .delete(`/api/folders/${id}`);
+      })
+      .then(res => {
+        return Note.find({folderId: mongoose.Types.ObjectId(id)})
+      })
+      .then(notes => {
+        expect(notes.length).to.equal(0);
+      });
+
+  });
 });
