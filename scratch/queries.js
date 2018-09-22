@@ -122,5 +122,5 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
   })
   .then(note => {
     console.log(note);
-
-  });
+  })
+  .then(() => mongoose.disconnect());
