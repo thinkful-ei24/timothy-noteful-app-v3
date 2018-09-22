@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
+const Tag = require('../models/tag');
 
 // mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
 //   .then(() => {
@@ -115,8 +116,11 @@ const Note = require('../models/note');
 
 mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
   .then(()=> {
-    return Note.updateMany({folderId: '111111111111111111111100'}, {$unset: {folderId: ''}});
+    
+    return Note.findOne()
+    .populate('tags')
   })
-  .then(notes => {
-    console.log(notes);
+  .then(note => {
+    console.log(note);
+
   });
