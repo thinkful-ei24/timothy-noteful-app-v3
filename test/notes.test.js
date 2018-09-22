@@ -152,6 +152,7 @@ describe('Noteful API', function(){
           expect(res.body).to.include.keys(fields);
           expect(note.title).to.equal(res.body.title);
           expect(note.content).to.equal(res.body.content);
+          expect(note.folderId).to.deep.equal(mongoose.Types.ObjectId(res.body.folderId));
           // expect(note.folderId).to.equal(res.body.folderId);
           // expect(note.id).to.equal(res.body.id);
           // res.body.tags.forEach((tag, index) => {
