@@ -1,3 +1,4 @@
+/* global it, describe, before, beforeEach, after, afterEach */
 'use strict';
 
 const chai = require('chai');
@@ -19,13 +20,13 @@ chai.use(chaiHttp);
 describe('Noteful API', function(){
   before(function () {
 
-    this.timeout(10000);
+    this.timeout(20000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
   beforeEach(function(){
-
+    this.timeout(10000);
     return Promise.all([
       Note.insertMany(notes),
       Folder.insertMany(folders),
@@ -432,10 +433,10 @@ describe('Noteful API', function(){
       const invalidId = 'invalid';
 
       return chai.request(app)
-      .delete(`/api/notes/${invalidId}`)
-      .then (res => {
-        expect(res).to.have.status(400);
-      });
+        .delete(`/api/notes/${invalidId}`)
+        .then (res => {
+          expect(res).to.have.status(400);
+        });
     });
   });
 

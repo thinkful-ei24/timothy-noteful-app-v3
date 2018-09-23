@@ -118,7 +118,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
   .then(()=> {
     
     return Note.findOne()
-    .populate('tags')
+      .populate('tags');
   })
   .then(note => {
     console.log(note);

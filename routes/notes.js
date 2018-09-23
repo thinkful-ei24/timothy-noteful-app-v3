@@ -1,10 +1,9 @@
 'use strict';
 
 const express = require('express');
-// const Folder = require('../models/folder');
 const Note = require('../models/note');
 const router = express.Router();
-const isValid = require('mongoose').Types.ObjectId.isValid;
+const { validateNoteId, validateFolderId, validateTags } = require('../middleware/validateObjectId');
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -25,24 +24,18 @@ router.get('/', (req, res, next) => {
   }
 
   if(tagId) {
-    filter.tags = tagId
-  };
+    filter.tags = tagId;
+  }
 
   Note.find(filter)
-    .sort({updatedAt: 1})
+    .sort({ updatedAt: 1 })
     .then(notes => res.json(notes))
-    .catch(err => next(err));
+    .catch(next);
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
-router.get('/:id', (req, res, next) => {
+router.get('/:id', validateNoteId, (req, res, next) => {
   const id = req.params.id;
-
-  if(!isValid(id)) {
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   Note.findById(id)
     .populate('tags')
@@ -50,11 +43,11 @@ router.get('/:id', (req, res, next) => {
       if(!note) return next();
       else res.json(note);
     })
-    .catch(err => next(err));
+    .catch(next);
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
-router.post('/', (req, res, next) => {
+router.post('/', validateFolderId, validateTags, (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
 
   if(!title || title.trim() === '') {
@@ -63,48 +56,23 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  if(folderId && !isValid(folderId)){
-    const err = new Error('Invalid folder id');
-    err.status = 400;
-    return next(err);
-  }
-
-  if(tags){
-    tags.forEach(tag => {
-      if(!isValid(tag)){
-        const err = new Error('At least one of the tag ids is not valid');
-        err.status = 400;
-        console.log(err.message);
-        return next(err);
-      }
-    });
-  }
-
   const newNote = {
     title: title,
     content: content,
     folderId: folderId ? folderId : null,
-    tags: tags
+    tags: tags ? tags : []
   };
 
   Note.create(newNote)
     .then(note => res.location(`${req.originalUrl}/${note._id}`).json(note))
-    .catch(err => next(err));
+    .catch(next);
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', (req, res, next) => {
+router.put('/:id', validateNoteId, validateFolderId, validateTags, (req, res, next) => {
   const id = req.params.id;
-  const folderId = req.body.folderId;
-  const tags = req.body.tags;
   const update = {};
   const updateableFields = ['title', 'content', 'folderId', 'tags'];
-  
-  if(!isValid(id)) {
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   if('title' in req.body && req.body.title.trim() === '') {
     const err = new Error('Missing title field');
@@ -112,44 +80,25 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  if(folderId && !isValid(folderId)){
-    const err = new Error('Invalid folder id');
-    err.status = 400;
-    return next(err);
-  }
-
-  if(tags){
-    tags.forEach(tag => {
-      if(!isValid(tag)){
-        const err = new Error('At least one of the tag ids is not valid');
-        err.status = 400;
-        console.log(err.message);
-        return next(err);
-      }
-    });
-  }
-
   updateableFields.forEach(field => {
     if(req.body[field]) update[field] = req.body[field];
   });
 
-  Note.findByIdAndUpdate(id, {$set: update}, {new: true})
+  Note.findByIdAndUpdate(
+    id, 
+    { $set: update }, 
+    { new: true }
+  )
     .then(note => {
       if(!note) return next();
       res.json(note);
     })
-    .catch(err => next(err));
+    .catch(next);
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', validateNoteId, (req, res, next) => {
   const id = req.params.id;
-
-  if(!isValid(id)){
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   Note.findById(id)
     .then(note => {

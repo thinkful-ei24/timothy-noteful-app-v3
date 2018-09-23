@@ -1,121 +1,96 @@
+'use strict';
+
 const express = require('express');
 const router = express.Router();
 const Tag = require('../models/tag');
 const Note = require('../models/note');
-const ObjectId = require('mongoose').Types.ObjectId;
-const isValid = require('mongoose').Types.ObjectId.isValid;
+const { validateNoteId } = require('../middleware/validateObjectId');
 
 router.get('/', (req, res, next) => {
 
-  Tag.find({})
+  Tag.find()
     .then(tags => {
       res.json(tags);
     })
-    .catch(err => next(err));
+    .catch(next);
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', validateNoteId, (req, res, next) => {
   const id = req.params.id;
-
-  if(!isValid(id)) {
-    const err = new Error('The tag id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   Tag.findById(id)
     .then(tag => {
       if(!tag) return next();
       else res.json(tag);
     })
-    .catch(err => next(err));
-  
+    .catch(next);
 });
 
-router.post('/', (req, res, next) => {
+function validateTagName (req, res, next){
   const name = req.body.name;
-
   if(!name || name.trim() === ''){
     const err = new Error('The tag is missing a name');
     err.status = 400;
     return next(err);
   }
+  next();
+}
 
-  Tag.create({
-    name: name
-  })
+router.post('/', validateTagName, (req, res, next) => {
+  const name = req.body.name;
+
+  Tag.create({ name })
     .then(tag => {
       return res.location(`${req.originalUrl}/${tag.name}`).status(201).send(tag);
     })
-    .catch(err => {
-      if(err.code === 11000) {
-        err = new Error('The tag name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
+    .catch(next);
 });
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', validateNoteId, validateTagName, (req, res, next) => {
   const id = req.params.id;
   const name = req.body.name;
 
-  if(!isValid(id)) {
-    const err = new Error('The tag id is invalid');
-    err.status = 400;
-    return next(err);
-  }
-
-  if(!name || name.trim() === ''){
-    const err = new Error('The tag is missing a name');
-    err.status = 400;
-    return next(err);
-  }
-
   Tag.findByIdAndUpdate(
-      id, 
-      {$set: {name: name}},
-      {new: true}
-    )
+    id, 
+    { $set: { name: name } },
+    { new: true }
+  )
     .then(tag => {
       if(!tag) return next();
       else res.json(tag);
     })
-    .catch(err => {
-      if(err.code === 11000) {
-        err = new Error('The tag name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
+    .catch(next);
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', validateNoteId, (req, res, next) => {
   const id = req.params.id;
   
-  if(!isValid(id)) {
-    const err = new Error('The tag id is invalid');
-    err.status = 400;
-    return next(err);
-  }
-
   Tag.findById(id)
     .then((tag) => {
       if(!tag) {
         return Promise.reject();
-      };
+      }
       return tag.remove();
     })
     .then(() => {
       return Note.updateMany(
         {}, 
-        {$pull: {tags: id}});
+        { $pull: { tags: id } }
+      );
     })
     .then(() => {
       res.sendStatus(204);
     })
-    .catch(err => next(err));
+    .catch(next);
 
+});
+
+router.use((err, req, res, next) => {
+  if(err.code === 11000){
+    err = new Error('The tag name already exists');
+    err.status = 400;
+  }
+  next(err);
 });
 
 module.exports = router;

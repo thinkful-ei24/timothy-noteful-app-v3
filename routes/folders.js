@@ -4,25 +4,18 @@ const express = require('express');
 const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
-const ObjectId = require('mongoose').Types.ObjectId;
-const isValid = require('mongoose').Types.ObjectId.isValid;
-
+const { validateNoteId } = require('../middleware/validateObjectId');
 
 router.get('/', (req, res, next) => {
 
   Folder.find({})
-    .sort({name: 1})
+    .sort({ name: 1 })
     .then(folders => res.json(folders))
-    .catch(err => next(err));
+    .catch(next);
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', validateNoteId, (req, res, next) => {
   const id = req.params.id; 
-  if(!isValid(id)) {
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   Folder.findById(id)
     .then(folder => {
@@ -31,72 +24,49 @@ router.get('/:id', (req, res, next) => {
     });
 });
 
-router.post('/', (req, res, next) => {
+function validateFolderName(req, res, next){
   const name = req.body.name;
-  if(!name || name.trim() === '') {
+  
+  if(!name|| name.trim() === ''){
     const err = new Error('Missing name field');
     err.status = 400;
     return next(err);
   }
+  next();
+}
 
-  const newFolder = {
-    name: req.body.name
-  };
+router.post('/', validateFolderName, (req, res, next) => {
+  const name = req.body.name;
+
+  const newFolder = { name };
 
   Folder.create(newFolder)
     .then(folder => {
       return res.status(201).location(`${req.originalUrl}/${folder.id}`).json(folder);
     })
-    .catch(err => {
-      if(err.code === 11000) {
-        err = new Error('The folder name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
+    .catch(next);
 });
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', validateNoteId, validateFolderName, (req, res, next) => {
   const id = req.params.id;
+  const name = req.body.name;
 
-  if(!isValid(id)) {
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
-  
-  if(!req.body.name || req.body.name.trim() === ''){
-    const err = new Error('Missing name field');
-    err.status = 400;
-    return next(err);
-  }
-  
-  const updatedFolder = {
-    name: req.body.name
-  };
+  const updatedFolder = { name };
 
-  Folder.findByIdAndUpdate(id, {$set: updatedFolder}, {new : true})
+  Folder.findByIdAndUpdate(
+    id, 
+    { $set: updatedFolder }, 
+    { new : true }
+  )
     .then(folder => {
       if(!folder) return next(); 
       else res.json(folder);
     })
-    .catch(err => {
-      if(err.code === 11000) {
-        err = new Error('The folder name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
+    .catch(next);
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', validateNoteId, (req, res, next) => {
   const folderId = req.params.id;
-  
-  if(!isValid(folderId)) {
-    const err = new Error('Id is invalid');
-    err.status = 400;
-    return next(err);
-  }
 
   Folder.findById(folderId)
     .then(folder => {
@@ -107,13 +77,22 @@ router.delete('/:id', (req, res, next) => {
     })
     .then(() => {
       return Note.updateMany(
-        {folderId: folderId}, 
-        {$unset: {folderId: ''}});
+        { folderId: folderId }, 
+        { $unset: { folderId: '' } }
+      );
     })
     .then(() => {
       res.sendStatus(204);
     })
     .catch(next);
+});
+
+router.use((err, req, res, next) => {
+  if(err.code === 11000){
+    err = new Error('The folder name already exists');
+    err.status = 400;
+  }
+  next(err);
 });
 
 module.exports = router;
