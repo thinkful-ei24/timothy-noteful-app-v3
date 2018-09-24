@@ -1,7 +1,5 @@
 const express = require('express');
 const User = require('../models/user');
-const passport = require('passport');
-const localStrategy = require('../passport/local');
 
 const router = express.Router();
 
@@ -10,22 +8,31 @@ router.post('/', (req, res, next) => {
 
   const requireFields = ['username', 'password'];
   const missingField = requireFields.find(field => (!(field in req.body)));
+  
   if(missingField) return res.status(422).res.json({
-    message: `Missing ${missingField} field.`
+    reason: 'Validation Error',
+    message: 'Missing field',
+    location: missingField
   });
 
   const trimmedFields = requireFields;
   const nontrimmedField = trimmedFields.find(field => req.body[field] !== req.body[field]);
   if(nontrimmedField) return res.status(422).res.json({
-    message: `Missing ${missingField} field.`
+    reason: 'LoginError',
+    message: 'Cannot start or end with whitespace',
+    location: nontrimmedField
   });
 
   User.find({ username })
     .countDocuments()
     .then(count => {
-      if(count > 0) return Promise.reject({
-        message: 'User exists'
-      });
+      if(count > 0) return Promise.reject(
+        {
+          reason: 'Validation Error',
+          message: 'Username exists',
+          location: 'username'
+        }
+      );
 
       return User.hashPassword(password);
     })
@@ -38,7 +45,6 @@ router.post('/', (req, res, next) => {
     })
     .then(user => {
       return res.status(201)
-        .location(`/api/users/${user.id}`)
         .json(user);
     })
     .catch(err => {

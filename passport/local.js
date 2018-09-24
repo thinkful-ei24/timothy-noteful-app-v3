@@ -6,7 +6,7 @@ const localStrategy = new LocalStrategy((username, password, done) => {
 
   let user;
 
-  User.find( { username })
+  User.findOne( { username })
     .then(_user => {
       user = _user;
       if(!user) return Promise.reject({
