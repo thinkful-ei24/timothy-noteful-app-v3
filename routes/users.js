@@ -18,7 +18,7 @@ router.post('/', (req, res, next) => {
     message: `Missing ${missingField} field.`
   });
 
-  User.find({ username})
+  User.find({ username })
     .countDocuments()
     .then(count => {
       if(count > 0) return Promise.reject({
