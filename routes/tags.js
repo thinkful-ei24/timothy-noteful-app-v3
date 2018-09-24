@@ -5,6 +5,11 @@ const router = express.Router();
 const Tag = require('../models/tag');
 const Note = require('../models/note');
 const { validateParamId } = require('../middleware/validate-objectid');
+const passport = require('passport');
+
+const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
+
+router.use(jwtAuth);
 
 router.get('/', (req, res, next) => {
 

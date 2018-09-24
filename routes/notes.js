@@ -4,6 +4,11 @@ const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
 const { validateParamId, validateFolderId, validateTags } = require('../middleware/validate-objectid');
+const passport = require('passport');
+
+const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
+
+router.use(jwtAuth);
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
