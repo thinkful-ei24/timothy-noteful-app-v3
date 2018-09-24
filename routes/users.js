@@ -10,7 +10,7 @@ router.post('/', (req, res, next) => {
   const missingField = requireFields.find(field => (!(field in req.body)));
   
   if(missingField) return res.status(422).res.json({
-    reason: 'Validation Error',
+    reason: 'ValidationError',
     message: 'Missing field',
     location: missingField
   });
@@ -18,7 +18,7 @@ router.post('/', (req, res, next) => {
   const trimmedFields = requireFields;
   const nontrimmedField = trimmedFields.find(field => req.body[field] !== req.body[field]);
   if(nontrimmedField) return res.status(422).res.json({
-    reason: 'LoginError',
+    reason: 'ValidationError',
     message: 'Cannot start or end with whitespace',
     location: nontrimmedField
   });
@@ -28,7 +28,7 @@ router.post('/', (req, res, next) => {
     .then(count => {
       if(count > 0) return Promise.reject(
         {
-          reason: 'Validation Error',
+          reason: 'ValidationError',
           message: 'Username exists',
           location: 'username'
         }
@@ -37,7 +37,7 @@ router.post('/', (req, res, next) => {
       return User.hashPassword(password);
     })
     .then(digest => {
-      User.create({
+      return User.create({
         username,
         password: digest,
         fullName
@@ -48,6 +48,7 @@ router.post('/', (req, res, next) => {
         .json(user);
     })
     .catch(err => {
+      if(err.reason === 'ValidationError') return res.status(422).json(err);
       next(err);
     });
 });
