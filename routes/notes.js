@@ -3,7 +3,7 @@
 const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
-const { validateParamId, validateFolderId, validateTags } = require('../middleware/validateObjectId');
+const { validateParamId, validateFolderId, validateTags } = require('../middleware/validate-objectid');
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {

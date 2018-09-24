@@ -39,4 +39,4 @@ function validateTags(req, res, next) {
 }
 
 
-module.exports = { validateParamId, validateFolderId, validateTags} ;
+module.exports = { validateParamId, validateFolderId, validateTags } ;

@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
-const { validateParamId } = require('../middleware/validateObjectId');
+const { validateParamId } = require('../middleware/validate-objectid');
 
 router.get('/', (req, res, next) => {
 
