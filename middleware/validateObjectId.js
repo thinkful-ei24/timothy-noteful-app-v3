@@ -2,7 +2,7 @@
 
 const isValid = require('mongoose').Types.ObjectId.isValid;
 
-function validateNoteId(req, res, next) {
+function validateParamId(req, res, next) {
   const id = req.params.id;
   if(!isValid(id)){
     const err = new Error('Object Id is not valid');
@@ -39,4 +39,4 @@ function validateTags(req, res, next) {
 }
 
 
-module.exports = { validateNoteId, validateFolderId, validateTags} ;
+module.exports = { validateParamId, validateFolderId, validateTags} ;

@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const Tag = require('../models/tag');
 const Note = require('../models/note');
-const { validateNoteId } = require('../middleware/validateObjectId');
+const { validateParamId } = require('../middleware/validateObjectId');
 
 router.get('/', (req, res, next) => {
 
@@ -15,7 +15,7 @@ router.get('/', (req, res, next) => {
     .catch(next);
 });
 
-router.get('/:id', validateNoteId, (req, res, next) => {
+router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
 
   Tag.findById(id)
@@ -46,7 +46,7 @@ router.post('/', validateTagName, (req, res, next) => {
     .catch(next);
 });
 
-router.put('/:id', validateNoteId, validateTagName, (req, res, next) => {
+router.put('/:id', validateParamId, validateTagName, (req, res, next) => {
   const id = req.params.id;
   const name = req.body.name;
 
@@ -62,7 +62,7 @@ router.put('/:id', validateNoteId, validateTagName, (req, res, next) => {
     .catch(next);
 });
 
-router.delete('/:id', validateNoteId, (req, res, next) => {
+router.delete('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
   
   Tag.findById(id)

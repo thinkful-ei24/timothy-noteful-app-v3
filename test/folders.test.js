@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 
 describe('Folders API', function(){
   before(function () {
-    this.timeout(4000);
+    this.timeout(10000);
 
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
       .then(() => mongoose.connection.db.dropDatabase());

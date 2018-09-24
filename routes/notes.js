@@ -3,7 +3,7 @@
 const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
-const { validateNoteId, validateFolderId, validateTags } = require('../middleware/validateObjectId');
+const { validateParamId, validateFolderId, validateTags } = require('../middleware/validateObjectId');
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -34,7 +34,7 @@ router.get('/', (req, res, next) => {
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
-router.get('/:id', validateNoteId, (req, res, next) => {
+router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
 
   Note.findById(id)
@@ -69,7 +69,7 @@ router.post('/', validateFolderId, validateTags, (req, res, next) => {
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', validateNoteId, validateFolderId, validateTags, (req, res, next) => {
+router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, next) => {
   const id = req.params.id;
   const update = {};
   const updateableFields = ['title', 'content', 'folderId', 'tags'];
@@ -97,7 +97,7 @@ router.put('/:id', validateNoteId, validateFolderId, validateTags, (req, res, ne
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
-router.delete('/:id', validateNoteId, (req, res, next) => {
+router.delete('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
 
   Note.findById(id)

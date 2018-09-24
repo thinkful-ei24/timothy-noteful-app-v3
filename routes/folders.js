@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
-const { validateNoteId } = require('../middleware/validateObjectId');
+const { validateParamId } = require('../middleware/validateObjectId');
 
 router.get('/', (req, res, next) => {
 
@@ -14,7 +14,7 @@ router.get('/', (req, res, next) => {
     .catch(next);
 });
 
-router.get('/:id', validateNoteId, (req, res, next) => {
+router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id; 
 
   Folder.findById(id)
@@ -47,7 +47,7 @@ router.post('/', validateFolderName, (req, res, next) => {
     .catch(next);
 });
 
-router.put('/:id', validateNoteId, validateFolderName, (req, res, next) => {
+router.put('/:id', validateParamId, validateFolderName, (req, res, next) => {
   const id = req.params.id;
   const name = req.body.name;
 
@@ -65,7 +65,7 @@ router.put('/:id', validateNoteId, validateFolderName, (req, res, next) => {
     .catch(next);
 });
 
-router.delete('/:id', validateNoteId, (req, res, next) => {
+router.delete('/:id', validateParamId, (req, res, next) => {
   const folderId = req.params.id;
 
   Folder.findById(folderId)

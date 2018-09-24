@@ -20,8 +20,11 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  const trimmedFields = requireFields;
-  const nontrimmedField = trimmedFields.find(field => req.body[field].trim() !== req.body[field]);
+  const trimmedFields = ['username', 'password'];
+  const nontrimmedField = trimmedFields.find(field => 
+    req.body[field].trim() !== req.body[field]
+  );
+  
   if(nontrimmedField) {
     const err = validationError(`${nontrimmedField} cannot start or end with whitespace`);
     return next(err);
