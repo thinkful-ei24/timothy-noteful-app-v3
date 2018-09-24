@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const bcrypt = require('bcryptjs');
 const userSchema = mongoose.Schema({
   username: { 
     type: String,
@@ -12,6 +12,9 @@ const userSchema = mongoose.Schema({
   },
   fullname: String
 });
+userSchema.statics.hashPassword = function(password){
+  return bcrypt.hash(password, 10);
+};
 
 userSchema.set('toObject', {
   virtuals: true,
@@ -23,4 +26,4 @@ userSchema.set('toObject', {
   }
 });
 
-exports.module = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);
