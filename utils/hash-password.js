@@ -5,7 +5,7 @@ passwords.forEach(password => {
   bcrypt.hash(password, 10)
     .then(digest => {
 
-      console.log('digest:', digest);
+      console.log('password:', password, 'digest:', digest);
       return bcrypt.compare(password, digest);
     })
     .then(isValid => {

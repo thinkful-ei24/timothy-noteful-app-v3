@@ -1,3 +1,30 @@
+const users = [ 
+  {
+    "_id": "333333333333333333333300",
+    "fullname": "Bob User",
+    "username": "bobuser",
+    "password": "$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi"
+  }, 
+  {
+    "_id": "333333333333333333333301",
+    "fullname": "Another User",
+    "username": "anotheruser",
+    "password": "$2a$10$fYhYfcY8vu7Kh4FRapgpU.xuYg639SpQZHiYlVHBHaaC6.SrT5mAW"
+  },
+  {
+    "_id": "333333333333333333333302",
+    "fullname": "Third User",
+    "username": "thirduser",
+    "password": "$2a$10$Q03XbexpHcXHbFzPpco/1OE/zP2Bo8knL3.2bVrK36Aypt/0IKCBi"
+  },
+  {
+    "_id": "333333333333333333333303",
+    "fullname": "Fourth User",
+    "username": "fourthuser",
+    "password": "$2a$10$cVuaAdCHTzQck8k8uV2gcurbEp04e5kWTECtvGF54bZtC/rWeSSKW"
+  }
+];
+
 const tags = [
   {
     "_id": "222222222222222222222200",
