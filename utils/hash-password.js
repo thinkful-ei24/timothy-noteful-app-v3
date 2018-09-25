@@ -1,13 +1,15 @@
 const bcrypt = require('bcryptjs');
-const password = 'baseball';
+const passwords = ['baseball', 'password', 'whatever', 'secret22'];
 
-bcrypt.hash(password, 10)
-  .then(digest => {
+passwords.forEach(password => {
+  bcrypt.hash(password, 10)
+    .then(digest => {
 
-    console.log('digest:', digest);
-    return bcrypt.compare(password, digest);
-  })
-  .then(isValid => {
-    console.log('isValid is', isValid);
-  })
-  .catch(err => console.log(err));
+      console.log('digest:', digest);
+      return bcrypt.compare(password, digest);
+    })
+    .then(isValid => {
+      console.log('isValid is', isValid);
+    })
+    .catch(err => console.log(err));
+});
