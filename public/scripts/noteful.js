@@ -363,7 +363,13 @@ const noteful = (function () {
     });
   }
 
+  function handleLoginSubmit(){
+    
+  }
+
   function bindEventListeners() {
+    handleLoginSubmit();
+
     handleNoteItemClick();
     handleNoteSearchSubmit();
 
