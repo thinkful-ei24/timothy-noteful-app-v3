@@ -12,10 +12,13 @@ router.use(jwtAuth);
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
+  const userId = req.user.id;
 
   const { folderId, searchTerm, tagId } = req.query;
   let filter = {};
 
+  filter.userId = userId;
+  
   if(folderId) {
     filter.folderId = folderId;
   }
@@ -41,8 +44,9 @@ router.get('/', (req, res, next) => {
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
 
-  Note.findById(id)
+  Note.findOne({ _id: id, userId })
     .populate('tags')
     .then(note => {
       if(!note) return next();
@@ -54,6 +58,7 @@ router.get('/:id', validateParamId, (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', validateFolderId, validateTags, (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
+  const userId = req.user.id;
 
   if(!title || title.trim() === '') {
     const err = new Error('Missing title field');
@@ -62,10 +67,11 @@ router.post('/', validateFolderId, validateTags, (req, res, next) => {
   }
 
   const newNote = {
-    title: title,
-    content: content,
+    title,
+    content,
     folderId: folderId ? folderId : null,
-    tags: tags ? tags : []
+    tags: tags ? tags : [],
+    userId
   };
 
   Note.create(newNote)
@@ -76,6 +82,7 @@ router.post('/', validateFolderId, validateTags, (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
   const update = {};
   const updateableFields = ['title', 'content', 'folderId', 'tags'];
 
@@ -104,8 +111,9 @@ router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, n
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
 
-  Note.findById(id)
+  Note.findByOne({ _id: id, userId })
     .then(note => {
       if(!note) {
         return Promise.reject();
