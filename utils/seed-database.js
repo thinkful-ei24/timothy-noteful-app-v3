@@ -4,8 +4,9 @@ const { MONGODB_URI } = require('../config');
 const Tag = require('../models/tag')
 const Note = require('../models/note');
 const Folder = require('../models/folder');
+const User = require('../models/user');
 
-const { folders, notes, tags } = require('../db/seed/notes');
+const { folders, notes, tags, users } = require('../db/seed/notes');
 
 mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
   .then(() => mongoose.connection.db.dropDatabase())
@@ -14,8 +15,10 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
       Note.insertMany(notes),
       Folder.insertMany(folders),
       Tag.insertMany(tags),
+      User.insertMany(users),
       Folder.createIndexes(),
-      Tag.createIndexes()
+      Tag.createIndexes(),
+      User.createIndexes()
     ]);
   })
   .then(([notes, folders, tags]) => {

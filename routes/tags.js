@@ -12,6 +12,7 @@ const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: tr
 router.use(jwtAuth);
 
 router.get('/', (req, res, next) => {
+  const userId = req.user.id;
 
   Tag.find()
     .then(tags => {
@@ -22,8 +23,9 @@ router.get('/', (req, res, next) => {
 
 router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
 
-  Tag.findById(id)
+  Tag.findOne( {_id: id, userId })
     .then(tag => {
       if(!tag) return next();
       else res.json(tag);
@@ -43,8 +45,9 @@ function validateTagName (req, res, next){
 
 router.post('/', validateTagName, (req, res, next) => {
   const name = req.body.name;
+  const userId = req.user.id;
 
-  Tag.create({ name })
+  Tag.create({ name, userId })
     .then(tag => {
       return res.location(`${req.originalUrl}/${tag.name}`).status(201).send(tag);
     })
@@ -53,6 +56,7 @@ router.post('/', validateTagName, (req, res, next) => {
 
 router.put('/:id', validateParamId, validateTagName, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
   const name = req.body.name;
 
   Tag.findByIdAndUpdate(
@@ -69,8 +73,9 @@ router.put('/:id', validateParamId, validateTagName, (req, res, next) => {
 
 router.delete('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
   
-  Tag.findById(id)
+  Tag.findOne({ _id: id, userId })
     .then((tag) => {
       if(!tag) {
         return Promise.reject();

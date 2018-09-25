@@ -21,8 +21,9 @@ router.get('/', (req, res, next) => {
 
 router.get('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id; 
+  const userId = req.user.id;
 
-  Folder.findById(id)
+  Folder.findOne( { _id: id, userId })
     .then(folder => {
       if(!folder) return next();
       else res.json(folder);
@@ -42,8 +43,9 @@ function validateFolderName(req, res, next){
 
 router.post('/', validateFolderName, (req, res, next) => {
   const name = req.body.name;
+  const userId = req.user.id;
 
-  const newFolder = { name };
+  const newFolder = { name, userId };
 
   Folder.create(newFolder)
     .then(folder => {
@@ -54,6 +56,7 @@ router.post('/', validateFolderName, (req, res, next) => {
 
 router.put('/:id', validateParamId, validateFolderName, (req, res, next) => {
   const id = req.params.id;
+  const userId = req.user.id;
   const name = req.body.name;
 
   const updatedFolder = { name };
@@ -72,8 +75,9 @@ router.put('/:id', validateParamId, validateFolderName, (req, res, next) => {
 
 router.delete('/:id', validateParamId, (req, res, next) => {
   const folderId = req.params.id;
+  const userId = req.user.id;
 
-  Folder.findById(folderId)
+  Folder.findOne( { _id: folderId, userId })
     .then(folder => {
       if(!folder) {
         return Promise.reject();
