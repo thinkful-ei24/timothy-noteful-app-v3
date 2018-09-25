@@ -3,9 +3,16 @@ const mongoose = require('mongoose');
 const foldersSchema = new mongoose.Schema({
   name: {
     type: String, 
-    required: true, 
-    unique: true }
+    required: true
+  },
+  userId : {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User'
+  }
 });
+
+foldersSchema.index({ name: 1, userId: 1}, { unique: true });
 
 // add createdAt and updatedAt fields
 foldersSchema.set('timestamps', true);

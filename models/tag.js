@@ -2,8 +2,18 @@ const mongoose = require('mongoose');
 
 const tagsSchema = new mongoose.Schema(
   {
-    name : {type: String, required: true, unique: true}
+    name : { type: String, required: true },
+    userId: { 
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User'
+    }
   }
+);
+
+tagsSchema.index(
+  { name: 1, userId: 1},
+  { unique: true }
 );
 
 // add createdAt and updatedAt fields
