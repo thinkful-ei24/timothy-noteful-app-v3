@@ -286,9 +286,10 @@ const noteful = (function () {
 
       api.remove(`/api/folders/${folderId}`)
         .then(() => {
-          const notesPromise = api.search('/api/notes');
-          const folderPromise = api.search('/api/folders');
-          return Promise.all([notesPromise, folderPromise]);
+          return Promise.all([
+            api.search('/api/notes'),
+            api.search('/api/folders')
+          ]);
         })
         .then(([notes, folders]) => {
           store.notes = notes;
@@ -324,11 +325,9 @@ const noteful = (function () {
     $('.js-new-tag-form').on('submit', event => {
       event.preventDefault();
 
-      const newTagEl = $('.js-new-tag-entry');
-
-      api.create('/api/tags', { name: newTagEl.val() })
+      const newTagName = $('.js-new-tag-entry').val();
+      api.create('/api/tags', { name: newTagName })
         .then(() => {
-          newTagEl.val('');
           return api.search('/api/tags');
         })
         .then(response => {
@@ -416,11 +415,9 @@ const noteful = (function () {
         })
         .catch(handleErrors);
     });
-}
+  }
 
   function bindEventListeners() {
-    handleLoginSubmit();
-
     handleNoteItemClick();
     handleNoteSearchSubmit();
 
@@ -434,6 +431,9 @@ const noteful = (function () {
     handleTagClick();
     handleNewTagSubmit();
     handleTagDeleteClick();
+
+    handleSignupSubmit();
+    handleLoginSubmit();
   }
 
   // This object contains the only exposed methods from this module:
