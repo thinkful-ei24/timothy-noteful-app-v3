@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const foldersSchema = new mongoose.Schema({
+const folderSchema = new mongoose.Schema({
   name: {
     type: String, 
     required: true
@@ -12,12 +12,12 @@ const foldersSchema = new mongoose.Schema({
   }
 });
 
-foldersSchema.index({ name: 1, userId: 1}, { unique: true });
+folderSchema.index({ name: 1, userId: 1}, { unique: true });
 
 // add createdAt and updatedAt fields
-foldersSchema.set('timestamps', true);
+folderSchema.set('timestamps', true);
 
-foldersSchema.set('toObject', {
+folderSchema.set('toObject', {
   virtuals: true,     // include built-in virtual `id`
   versionKey: false,  // remove `__v` version key  
   transform: (doc, ret) => {
@@ -25,4 +25,4 @@ foldersSchema.set('toObject', {
   }
 });
 
-module.exports = mongoose.model('Folder', foldersSchema);
+module.exports = mongoose.model('Folder', folderSchema);

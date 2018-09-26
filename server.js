@@ -33,10 +33,11 @@ app.use(express.json());
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
+const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
 // Mount routers
-app.use('/api/notes', notesRouter);
-app.use('/api/folders', foldersRouter);
-app.use('/api/tags', tagsRouter);
+app.use('/api/notes', jwtAuth, notesRouter);
+app.use('/api/folders', jwtAuth, foldersRouter);
+app.use('/api/tags', jwtAuth, tagsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', authRouter);
 

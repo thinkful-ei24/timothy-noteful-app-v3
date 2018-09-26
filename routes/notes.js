@@ -4,11 +4,6 @@ const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
 const { validateParamId, validateFolderId, validateTags } = require('../middleware/validate-objectid');
-const passport = require('passport');
-
-const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
-
-router.use(jwtAuth);
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -26,8 +21,8 @@ router.get('/', (req, res, next) => {
   if (searchTerm) {
     const re = new RegExp(searchTerm, 'i');
     filter.$or = [ 
-      {title: {$regex: re }}, 
-      {content: {$regex: re }}
+      { title: { $regex: re } }, 
+      { content: { $regex: re } }
     ];
   }
 
@@ -83,6 +78,7 @@ router.post('/', validateFolderId, validateTags, (req, res, next) => {
 router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, next) => {
   const id = req.params.id;
   const userId = req.user.id;
+
   const update = {};
   const updateableFields = ['title', 'content', 'folderId', 'tags'];
 
@@ -96,8 +92,8 @@ router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, n
     if(req.body[field]) update[field] = req.body[field];
   });
 
-  Note.findByIdAndUpdate(
-    id, 
+  Note.findOneAndUpdate(
+    { _id: id, userId }, 
     { $set: update }, 
     { new: true }
   )

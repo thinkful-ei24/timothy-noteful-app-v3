@@ -22,7 +22,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
     ]);
   })
   .then(([notes, folders, tags]) => {
-    console.info(`Inserted ${notes.length} Notes, ${tags.length} Tags, & ${folders.length} Folders`);
+    console.info(`Inserted ${notes.length} Notes, ${tags.length} Tags, & ${folders.length} Folders, ${users.length} Users`);
   })
   .then(() => mongoose.disconnect())
   .catch(err => {

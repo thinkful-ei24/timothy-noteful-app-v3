@@ -5,16 +5,11 @@ const router = express.Router();
 const Tag = require('../models/tag');
 const Note = require('../models/note');
 const { validateParamId } = require('../middleware/validate-objectid');
-const passport = require('passport');
-
-const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
-
-router.use(jwtAuth);
 
 router.get('/', (req, res, next) => {
   const userId = req.user.id;
 
-  Tag.find()
+  Tag.find({ userId })
     .then(tags => {
       res.json(tags);
     })
@@ -59,8 +54,8 @@ router.put('/:id', validateParamId, validateTagName, (req, res, next) => {
   const userId = req.user.id;
   const name = req.body.name;
 
-  Tag.findByIdAndUpdate(
-    id, 
+  Tag.findByOneAndUpdate(
+    { _id: id, userId }, 
     { $set: { name: name } },
     { new: true }
   )

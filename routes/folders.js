@@ -5,15 +5,11 @@ const router = express.Router();
 const Folder = require('../models/folder');
 const Note = require('../models/note');
 const { validateParamId } = require('../middleware/validate-objectid');
-const passport = require('passport');
-
-const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
-
-router.use(jwtAuth);
 
 router.get('/', (req, res, next) => {
+  const userId = req.user.id;
 
-  Folder.find({})
+  Folder.find({ userId })
     .sort({ name: 1 })
     .then(folders => res.json(folders))
     .catch(next);
@@ -61,16 +57,29 @@ router.put('/:id', validateParamId, validateFolderName, (req, res, next) => {
 
   const updatedFolder = { name };
 
-  Folder.findByIdAndUpdate(
-    id, 
-    { $set: updatedFolder }, 
-    { new : true }
+  Folder.findOneAndUpdate(
+    { _id: id, userId }, 
+    { $set: updatedFolder },
+    { new: true }
   )
     .then(folder => {
-      if(!folder) return next(); 
+      if(!folder) {
+        return next();
+      }
       else res.json(folder);
+
     })
     .catch(next);
+  // Folder.findByIdAndUpdate(
+  //   id, 
+  //   { $set: updatedFolder }, 
+  //   { new : true }
+  // )
+  //   .then(folder => {
+  //     if(!folder) return next(); 
+  //     else res.json(folder);
+  //   })
+  //   .catch(next);
 });
 
 router.delete('/:id', validateParamId, (req, res, next) => {

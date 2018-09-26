@@ -10,7 +10,7 @@ function validationError(message){
 }
 
 router.post('/', (req, res, next) => {
-  const { username, password, fullName } = req.body;
+  const { username, password, fullname } = req.body;
 
   const requireFields = ['username', 'password'];
   const missingField = requireFields.find(field => (!(field in req.body)));
@@ -72,7 +72,7 @@ router.post('/', (req, res, next) => {
       return User.create({
         username,
         password: digest,
-        fullName
+        fullname
       });
     })
     .then(user => {

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const tagsSchema = new mongoose.Schema(
+const tagSchema = new mongoose.Schema(
   {
     name : { type: String, required: true },
     userId: { 
@@ -11,15 +11,15 @@ const tagsSchema = new mongoose.Schema(
   }
 );
 
-tagsSchema.index(
+tagSchema.index(
   { name: 1, userId: 1},
   { unique: true }
 );
 
 // add createdAt and updatedAt fields
-tagsSchema.set('timestamps', true);
+tagSchema.set('timestamps', true);
 
-tagsSchema.set('toObject', {
+tagSchema.set('toObject', {
   virtuals: true,     // include built-in virtual `id`  // remove `__v` version key
   versionKey: false,
   transform: (doc, ret) => {
@@ -28,4 +28,4 @@ tagsSchema.set('toObject', {
   }
 });
 
-module.exports = mongoose.model('Tag', tagsSchema);
+module.exports = mongoose.model('Tag', tagSchema);
