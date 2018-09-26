@@ -71,8 +71,8 @@ function validateTags(req, res, next) {
 
   const queryPromises = tags.map(tag => {
     return Tag.findOne({ _id: tag, userId })
-      .then(dbTag => {
-        if(!dbTag){
+      .then(result => {
+        if(!result){
           const err = new Error('Invalid tag id');
           err.status = 400;
           return Promise.reject(err);
