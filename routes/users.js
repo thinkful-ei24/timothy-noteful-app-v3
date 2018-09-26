@@ -15,8 +15,16 @@ router.post('/', (req, res, next) => {
   const requireFields = ['username', 'password'];
   const missingField = requireFields.find(field => (!(field in req.body)));
   
-  if(missingField) {
+  if(missingField){
     const err = validationError(`${missingField} field is missing`);
+    return next(err);
+  }
+
+  const stringFields = ['username', 'password'];
+  const nonStringField = stringFields.find(field => typeof req.body[field] !== 'string');
+
+  if(nonStringField){
+    const err = validationError(`${nonStringField} must be a string`);
     return next(err);
   }
 
@@ -25,7 +33,7 @@ router.post('/', (req, res, next) => {
     req.body[field].trim() !== req.body[field]
   );
 
-  if(nontrimmedField) {
+  if(nontrimmedField){
     const err = validationError(`${nontrimmedField} cannot start or end with whitespace`);
     return next(err);
   }
@@ -72,7 +80,7 @@ router.post('/', (req, res, next) => {
       return User.create({
         username,
         password: digest,
-        fullname
+        fullname: fullname.trim()
       });
     })
     .then(user => {

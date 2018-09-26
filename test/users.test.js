@@ -6,47 +6,43 @@ const mongoose = require('mongoose');
 const { TEST_MONGODB_URI } = require('../config');
 
 const User = require('../models/user');
-const { users } = require('../db/seed/notes');
 
 const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe.only('Noteful API - Users', function () {
+describe.only('Noteful API - Users', function() {
   const username = 'exampleUser';
   const password = 'examplePass';
   const fullname = 'Example User';
 
-  before(function () {
+  before(function() {
     this.timeout(5000);
-    return mongoose.connect(TEST_MONGODB_URI)
+    return mongoose
+      .connect(TEST_MONGODB_URI)
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     this.timeout(5000);
-    return Promise.all([
-      User.insertMany(users),
-      User.createIndexes()
-    ]);
+    return User.createIndexes();
   });
 
-  afterEach(function () {
+  afterEach(function() {
     return mongoose.connection.db.dropDatabase();
   });
 
-  after(function () {
+  after(function() {
     return mongoose.disconnect();
   });
-  
-  describe('/api/users', function () {
-    describe('POST', function () {
-      it('Should create a new user', function () {
+
+  describe('/api/users', function() {
+    describe('POST', function() {
+      it('Should create a new user', function() {
         const testUser = { username, password, fullname };
 
         let res;
-        return chai
-          .request(app)
+        return chai.request(app)
           .post('/api/users')
           .send(testUser)
           .then(_res => {
@@ -72,10 +68,10 @@ describe.only('Noteful API - Users', function () {
           });
       });
 
-      it('Should reject users with missing username', function () {
+      it('Should reject users with missing username', function() {
         const testUser = { password, fullname };
-        return chai
-          .request(app)
+
+        return chai.request(app)
           .post('/api/users')
           .send(testUser)
           .then(res => {
@@ -83,83 +79,123 @@ describe.only('Noteful API - Users', function () {
           });
       });
 
-      // it('Should reject users with missing password', function(){
-      //   const testUser = { username, fullname };
-      //   return chai.request(app).post('api/users').send(testUser)
-      //     .then(res => {
-      //       expect(res).to.have.status(422);
-      //     });
+      it('Should reject users with missing password', function() {
+        const testUser = { username, fullname };
 
-      // });
-      it('Should reject users with non-string username', function(){
-        const testUser = { username: 1234445, password, fullname };
-        return chai.request(app).post('api/users').send(testUser)
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
       });
 
-      it('Should reject users with non-string password', function(){
-        const testUser = { username, password: 12345678, fullname };
-        return chai.request(app).post('api/users').send(testUser)
+      it('Should reject users with non-string username', function() {
+        const testUser = { username: 1, password, fullname };
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
-
       });
-      it('Should reject users with non-trimmed username', function(){
+
+      it('Should reject users with non-string password', function() {
+        const testUser = { username, password: 11111111, fullname };
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res => {
+            expect(res).to.have.status(422);
+          });
+      });
+
+      it('Should reject users with non-trimmed username', function() {
         const testUser = { username: username + ' ', password, fullname };
-        return chai.request(app).post('api/users').send(testUser)
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
-
       });
 
-      it('Should reject users with non-trimmed password', function(){
+      it('Should reject users with non-trimmed password', function() {
         const testUser = { username, password: password + ' ', fullname };
-        return chai.request(app).post('api/users').send(testUser)
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
-
       });
 
-      it('Should reject users with empty username', function(){
+      it('Should reject users with empty username', function() {
         const testUser = { username: '', password, fullname };
-        return chai.request(app).post('api/users').send(testUser)
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
       });
 
-      it('Should reject users with password less than 8 characters', function(){
+      it('Should reject users with password less than 8 characters', function() {
         const testUser = { username, password: password.slice(0,7), fullname };
-        return chai.request(app).post('api/users').send(testUser)
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
             expect(res).to.have.status(422);
           });
       });
 
-      it('Should reject users with password greater than 72 characters', function(){
-        const testUser = { username, password: 'a'.repeat(73), fullname };
-        return chai.request(app).post('api/users').send(testUser)
+      it('Should reject users with password greater than 72 characters', function() {
+        const testUser = { username, password: password.repeat(10), fullname };
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
-            expect(res).to.have.status(400);
+            expect(res).to.have.status(422);
           });
       });
 
-      it('Should reject users with duplicate username', function(){
+      it('Should reject users with duplicate username', function() {
         const testUser = { username, password, fullname };
-        return chai.request(app).post('api/users').send(testUser)
+        const duplicateUser = { username, password: 'differentPass', fullname: 'Second User'};
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
           .then(res => {
-            expect(res).to.have.status(400);
+            expect(res).to.have.status(201);
+            return chai.request(app)
+              .post('/api/users')
+              .send(duplicateUser);
+          })
+          .then(res => {
+            expect(res).to.have.status(422);
           });
       });
 
-      // it('Should trim fullname', function(){
+      it('Should trim fullname', function() {
+        const testUser = { username, password, fullname: fullname + ' ' };
 
-      // });
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res => {
+            const id = res.body.id;
+            return User.findOne({ _id: id });
+          })
+          .then(user => {
+            expect(user.fullname).to.equal(fullname);
+          });
+      });
     });
   });
 });
