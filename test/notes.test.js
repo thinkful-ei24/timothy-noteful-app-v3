@@ -538,6 +538,56 @@ describe.only('Noteful API', function(){
           expect(res.body).to.include.key('message');
         });
     });
+
+    it('should return 400 if a tag does not belong to the user', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId,
+        tags
+      };
+
+      return Tag.findOne({ userId: { $ne: ObjectId(userId)}})
+        .then(tag => {
+          newNote.tags.push(tag.id);
+          return Note.findOne({ userId });
+        })
+        .then(note => {
+          const noteId = note.id;
+          return chai.request(app)
+            .put(`/api/notes/${noteId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(newNote);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+    });
+
+    it('should return 400 if folder does not belong to the user', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        tags
+      };
+
+      return Folder.findOne({ userId: { $ne: ObjectId(userId)}})
+        .then(folder => {
+          newNote.folderId = folder.id;
+          return Note.findOne({ userId });
+        })
+        .then(note => {
+          const noteId = note.id;
+          return chai.request(app)
+            .put(`/api/notes/${noteId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(newNote);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+    });
+
   });
 
   describe('DELETE note endpoint', function(){
