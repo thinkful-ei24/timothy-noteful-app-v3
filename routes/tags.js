@@ -54,7 +54,7 @@ router.put('/:id', validateParamId, validateTagName, (req, res, next) => {
   const userId = req.user.id;
   const name = req.body.name;
 
-  Tag.findByOneAndUpdate(
+  Tag.findOneAndUpdate(
     { _id: id, userId }, 
     { $set: { name: name } },
     { new: true }
@@ -79,7 +79,7 @@ router.delete('/:id', validateParamId, (req, res, next) => {
     })
     .then(() => {
       return Note.updateMany(
-        {}, 
+        { userId }, 
         { $pull: { tags: id } }
       );
     })
