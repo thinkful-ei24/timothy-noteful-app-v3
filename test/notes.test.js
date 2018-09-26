@@ -22,7 +22,7 @@ const { folders, notes, users, tags } = require('../db/seed/notes');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe('Noteful API', function(){
+describe.only('Noteful API', function(){
   let user;
   let userId;
   let token;
@@ -336,6 +336,53 @@ describe('Noteful API', function(){
         .then(res => { 
           expect(res).to.have.status(400);
         });
+    });
+
+    it('should return 400 if a tag does not belong to the user', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId,
+        tags
+      };
+
+      return Tag.findOne({ userId: { $ne: ObjectId(userId) }})
+        .then(tag => {
+          newNote.tags.push(tag.id);
+
+          return chai.request(app)
+            .post('/api/notes')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newNote);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('Invalid tag id');
+        });
+
+    });
+    
+    it('should return 400 if the folder does not belong to the user', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        tags
+      };
+
+      return Folder.findOne({ userId: { $ne: ObjectId(userId) }})
+        .then(folder => {
+          newNote.folderId = folder.id;
+
+          return chai.request(app)
+            .post('/api/notes')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newNote)
+            .then(res => {
+              expect(res).to.have.status(400);
+            });
+
+        });
+
     });
 
   });

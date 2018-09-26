@@ -16,22 +16,12 @@ function validateParamId(req, res, next) {
 }
 
 function validateFolderId(req, res, next) {
-  const userId = req.user.id;
-  const folderId = req.body.folderId;
-
-  // Folder.findOne({ _id: folderId, userId })
-  //   .then(folder => {
-
-  //     if((folderId && !isValid(folderId))|| !folder){
-  //       const err = new Error('Invalid folder id');
-  //       err.status = 400;
-  //       return next(err);
-  //     }
-  //     next();
-  //   }); 
 
   if(!('folderId' in req.body)) return next();
 
+  const userId = req.user.id;
+  const folderId = req.body.folderId;
+  
   if(!isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
@@ -50,12 +40,13 @@ function validateFolderId(req, res, next) {
 }
 
 function validateTags(req, res, next) {
-  const userId = req.user.id;
-  const tags = req.body.tags;
 
   if(!('tags' in req.body)){
     return next();
   }
+
+  const userId = req.user.id;
+  const tags = req.body.tags;
 
   if(!Array.isArray(tags)){
     const err = new Error('Tags field is not an array');
