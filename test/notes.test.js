@@ -22,7 +22,7 @@ const { folders, notes, users, tags } = require('../db/seed/notes');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe.only('Noteful API', function(){
+describe('Noteful API', function(){
   let user;
   let userId;
   let token;
@@ -56,6 +56,7 @@ describe.only('Noteful API', function(){
   });
 
   after(function () {
+    this.timeout(5000);
     return mongoose.disconnect();
   });
     
@@ -258,6 +259,12 @@ describe.only('Noteful API', function(){
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys(fields);
+          expect(res.body.title).to.equal(newNote.title);
+          expect(res.body.content).to.equal(newNote.content);
+          expect(res.body.folderId).to.equal(newNote.folderId);
+          res.body.tags.forEach((resTag, index) => {
+            expect(resTag).to.equal(newNote.tags[index]);
+          });
         });
     });
 
