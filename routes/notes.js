@@ -109,7 +109,7 @@ router.delete('/:id', validateParamId, (req, res, next) => {
   const id = req.params.id;
   const userId = req.user.id;
 
-  Note.findByOne({ _id: id, userId })
+  Note.findOne({ _id: id, userId })
     .then(note => {
       if(!note) {
         return Promise.reject();

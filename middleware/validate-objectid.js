@@ -30,7 +30,9 @@ function validateFolderId(req, res, next) {
   //     next();
   //   }); 
 
-  if(folderId && !isValid(folderId)){
+  if(!('folderId' in req.body)) return next();
+
+  if(!isValid(folderId)){
     const err = new Error('Invalid folder id');
     err.status = 400;
     return next(err);

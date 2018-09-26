@@ -19,7 +19,7 @@ const { folders, notes, tags, users } = require('../db/seed/notes');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe.only('Tags API', function(){
+describe('Tags API', function(){
   let user;
   let userId;
   let token;
