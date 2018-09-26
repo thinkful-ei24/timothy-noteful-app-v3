@@ -136,6 +136,7 @@ describe.only('Noteful API - Users', function() {
 
       it('Should reject users with empty username', function() {
         const testUser = { username: '', password, fullname };
+
         return chai.request(app)
           .post('/api/users')
           .send(testUser)
@@ -146,6 +147,7 @@ describe.only('Noteful API - Users', function() {
 
       it('Should reject users with password less than 8 characters', function() {
         const testUser = { username, password: password.slice(0,7), fullname };
+
         return chai.request(app)
           .post('/api/users')
           .send(testUser)
@@ -156,6 +158,7 @@ describe.only('Noteful API - Users', function() {
 
       it('Should reject users with password greater than 72 characters', function() {
         const testUser = { username, password: password.repeat(10), fullname };
+        
         return chai.request(app)
           .post('/api/users')
           .send(testUser)
