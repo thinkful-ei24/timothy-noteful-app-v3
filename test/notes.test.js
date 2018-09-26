@@ -22,7 +22,7 @@ const { folders, notes, users, tags } = require('../db/seed/notes');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe.only('Noteful API', function(){
+describe('Noteful API', function(){
   let user;
   let userId;
   let token;
@@ -228,7 +228,7 @@ describe.only('Noteful API', function(){
     let folderId;
 
     this.beforeEach(function(){
-      const tagPromise = Tag.find({ userId })
+      const tagPromise = Tag.find({ userId });
       
       const folderPromise = Folder.find({ userId });
 
@@ -247,7 +247,6 @@ describe.only('Noteful API', function(){
         content: 'Not like the brazen giant of Greek fame...',
         folderId: folderId,
         tags: tags
-        // tags: ['222222222222222222222200', '222222222222222222222201', '222222222222222222222202']
       };
 
       return chai.request(app)
@@ -265,7 +264,9 @@ describe.only('Noteful API', function(){
     it('should insert new note into the collection', function(){
       const newNote = {
         title: 'The New Colossus',
-        content: 'Not like the brazen giant of Greek fame...'
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId,
+        tags
       };
 
       return chai.request(app)
@@ -274,11 +275,15 @@ describe.only('Noteful API', function(){
         .set('Authorization', `Bearer ${token}`)
         .then(res => {
           const id = res.body.id;
-          return Note.findById(id);
+          return Note.findOne({ _id: id, userId });
         })
-        .then(note => {
-          Object.keys(newNote).forEach(key => {
-            expect(note[key]).to.equal(newNote[key]);
+        .then(dbNote => {
+          expect(dbNote.title).to.equal(newNote.title);
+          expect(dbNote.content).to.equal(newNote.content);
+          expect(dbNote.folderId).to.deep.equal(ObjectId(newNote.folderId));
+          expect(dbNote.tags).to.be.length(newNote.tags.length);
+          dbNote.tags.forEach((dbTag, index) => {
+            expect(dbTag).to.deep.equal(ObjectId(newNote.tags[index]));
           });
         });
     });
@@ -342,7 +347,7 @@ describe.only('Noteful API', function(){
     let folderId;
 
     this.beforeEach(function(){
-      const tagPromise = Tag.find({ userId })
+      const tagPromise = Tag.find({ userId });
       const folderPromise = Folder.find({ userId });
 
       return Promise.all([tagPromise, folderPromise])
@@ -396,12 +401,16 @@ describe.only('Noteful API', function(){
             .send(newNote);
         }) 
         .then(()=> {
-          return Note.findById(id);
+          return Note.findOne( { _id: id, userId });
         })
-        .then(note => {
-          expect(note.title).to.equal(newNote.title);
-          expect(note.content).to.equal(newNote.content);
-          expect(note.tags).to.be.length(newNote.tags.length);
+        .then(dbNote => {
+          expect(dbNote.title).to.equal(newNote.title);
+          expect(dbNote.content).to.equal(newNote.content);
+          expect(dbNote.folderId).to.deep.equal(ObjectId(newNote.folderId));
+          expect(dbNote.tags).to.be.length(newNote.tags.length);
+          dbNote.tags.forEach((dbTag, index) => {
+            expect(dbTag).to.deep.equal(ObjectId(newNote.tags[index]));
+          });
         });
     });      
 

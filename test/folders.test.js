@@ -3,6 +3,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const app = require('../server');
 const { TEST_MONGODB_URI } = require('../config');
@@ -80,7 +81,7 @@ describe('Folders API', function(){
           expect(res).to.be.json;
           expect(res.body).to.be.an('array');
           res.body.forEach(folder => {
-            expect(folder).to.include.keys('id', 'name');
+            expect(folder).to.include.keys('id', 'name', 'userId');
           });
         });
     });
@@ -103,6 +104,7 @@ describe('Folders API', function(){
           expect(res.body).to.include.keys('id', 'name');
           expect(res.body.name).to.equal(folder.name);
           expect(res.body.id).to.equal(folder.id);  
+          expect(ObjectId(res.body.userId)).to.deep.equal(folder.userId);
         });
     });
 
@@ -141,8 +143,9 @@ describe('Folders API', function(){
         .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(201);
-          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body).to.include.keys('id', 'name', 'userId');
           expect(res.body.name).to.equal(validFolder.name);
+          expect(res.body.userId).to.equal(userId);
         });
     });
 
@@ -161,6 +164,7 @@ describe('Folders API', function(){
         })
         .then(folder => {
           expect(folder.name).to.equal(validFolder.name);
+          expect(folder.userId).to.deep.equal(ObjectId(userId));
         });
     });
     
