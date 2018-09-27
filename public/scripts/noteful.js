@@ -170,12 +170,13 @@ const noteful = (function () {
       event.preventDefault();
 
       const editForm = $(event.currentTarget);
+      const folderId = editForm.find('.js-note-folder-entry').val();
       const noteObj = {
         id: store.currentNote.id,
         title: editForm.find('.js-note-title-entry').val(),
         content: editForm.find('.js-note-content-entry').val(),
-        folderId: editForm.find('.js-note-folder-entry').val(),
-        tags: editForm.find('.js-note-tags-entry').val()
+        folderId: folderId ? folderId : null,
+        tags: editForm.find('.js-note-tags-entry').val() 
       };
 
       if (store.currentNote.id) {

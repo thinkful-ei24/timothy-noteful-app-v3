@@ -2,12 +2,15 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const expect = chai.expect;
 const mongoose = require('mongoose');
+
 chai.use(chaiHttp);
 const app = require('../server');
-const User = require('../models/user');
+
 const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
-const { users } = require('../db/seed/notes');
 const jwt = require('jsonwebtoken');
+
+const User = require('../models/user');
+const { users } = require('../db/seed/notes');
 
 describe('Auth Endpoints', function(){
 
@@ -19,7 +22,6 @@ describe('Auth Endpoints', function(){
   
   beforeEach(function(){
     this.timeout(5000);
-    return User.insertMany(users);
   });
 
   afterEach(function(){
@@ -115,4 +117,55 @@ describe('Auth Endpoints', function(){
         });
     });  
   });
+
+  describe('REFRESH endpoint', function(){
+
+    beforeEach(function(){
+      return User.insertMany(users);
+    });
+
+    it('should return a valid jwt', function(){
+  
+      return User.findOne()
+        .then(user => {
+          expect(user).to.be.be.an('object');
+          const token = jwt.sign( { user }, JWT_SECRET, { subject: user.username });
+
+          return chai.request(app)
+            .post('/api/refresh')
+            .set('Authorization', `Bearer ${token}`);
+        })
+        .then(res => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.have.key('authToken');
+          
+          const authToken = res.body.authToken;
+
+          return new Promise((resolve) => {
+            jwt.verify(authToken, JWT_SECRET, (err) => {
+              if(err){
+                return resolve(false);
+              }
+              return resolve(true);
+            });
+          });
+        })
+        .then(jwtIsValid => {
+          expect(jwtIsValid).to.be.true;
+        });
+    });
+
+    it('should return 401 if request jwt is invalid', function(){
+      const token = 'INVALIDTOKEN';
+
+      return chai.request(app)
+        .post('/api/refresh')
+        .set('Authorization', `Bearer ${token}`)
+        .then(res => {
+          expect(res).to.have.status(401);
+        });
+    });
+
+  });
+
 });

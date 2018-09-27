@@ -16,11 +16,10 @@ function validateParamId(req, res, next) {
 }
 
 function validateFolderId(req, res, next) {
-
-  if(!('folderId' in req.body)) return next();
+  const folderId = req.body.folderId;
+  if(!folderId) return next();
 
   const userId = req.user.id;
-  const folderId = req.body.folderId;
   
   if(!isValid(folderId)){
     const err = new Error('Invalid folder id');
