@@ -25,14 +25,33 @@ function compareNotes(resNote, dbNote, tagsIsPopulated = false){
   expect(new Date(resNote.createdAt)).to.deep.equal(dbNote.createdAt);
   expect(new Date(resNote.updatedAt)).to.deep.equal(dbNote.updatedAt);
   expect(ObjectId(resNote.folderId)).to.deep.equal(dbNote.folderId);
+  compareTags(resNote.tags, dbNote.tags, tagsIsPopulated);
+}
+
+function compareNewNote(newNote, otherNote, otherNoteIsFromDb = true){
+  const folderId = otherNoteIsFromDb ? ObjectId(newNote.folderId) : newNote.folderId;
+  expect(newNote.title).to.equal(otherNote.title);
+  expect(newNote.content).to.equal(otherNote.content);
+  expect(folderId).to.deep.equal(otherNote.folderId);
+  if(otherNoteIsFromDb) {
+    compareTags(newNote.tags, otherNote.tags);
+  } else {
+    newNote.tags.forEach((newNoteTag, index) => {
+      const otherNoteTag = otherNote.tags[index];
+      expect(newNoteTag).to.equal(otherNoteTag);
+    });
+  }
+}
+
+function compareTags(resTags, dbTags, tagsIsPopulated = false){
   if(!tagsIsPopulated){
-    resNote.tags.forEach((resTag, index) => {
-      const dbTag = dbNote.tags[index];
+    resTags.forEach((resTag, index) => {
+      const dbTag = dbTags[index];
       expect(ObjectId(resTag)).to.deep.equal(dbTag);
     });
   } else {
-    resNote.tags.forEach((resTag, index) => {
-      const dbTag = dbNote.tags[index];
+    resTags.forEach((resTag, index) => {
+      const dbTag = dbTags[index];
       expect(resTag.id).to.deep.equal(dbTag.id);
       expect(resTag.name).to.equal(dbTag.name);
       expect(ObjectId(resTag.userId)).to.deep.equal(dbTag.userId);
@@ -58,7 +77,6 @@ describe('Noteful API', function(){
   });
 
   beforeEach(function(){
-    this.timeout(5000);
     return Promise.all([
       User.insertMany(users),
       Note.insertMany(notes),
@@ -267,8 +285,7 @@ describe('Noteful API', function(){
       return Promise.all([tagPromise, folderPromise])
         .then(([_tags, folders]) => {
           tags = _tags.map(tag => tag.id);
-          folder = folders[0];
-          folderId = folder.id;
+          folderId = folders[0].id;
         });
     });
 
@@ -290,12 +307,7 @@ describe('Noteful API', function(){
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys(fields);
-          expect(res.body.title).to.equal(newNote.title);
-          expect(res.body.content).to.equal(newNote.content);
-          expect(res.body.folderId).to.equal(newNote.folderId);
-          res.body.tags.forEach((resTag, index) => {
-            expect(resTag).to.equal(newNote.tags[index]);
-          });
+          compareNewNote(newNote, res.body, false);
         });
     });
 
@@ -316,13 +328,7 @@ describe('Noteful API', function(){
           return Note.findOne({ _id: id, userId });
         })
         .then(dbNote => {
-          expect(dbNote.title).to.equal(newNote.title);
-          expect(dbNote.content).to.equal(newNote.content);
-          expect(dbNote.folderId).to.deep.equal(ObjectId(newNote.folderId));
-          expect(dbNote.tags).to.be.length(newNote.tags.length);
-          dbNote.tags.forEach((dbTag, index) => {
-            expect(dbTag).to.deep.equal(ObjectId(newNote.tags[index]));
-          });
+          compareNewNote(newNote, dbNote);
         });
     });
 
@@ -525,13 +531,7 @@ describe('Noteful API', function(){
           return Note.findOne( { _id: id, userId });
         })
         .then(dbNote => {
-          expect(dbNote.title).to.equal(newNote.title);
-          expect(dbNote.content).to.equal(newNote.content);
-          expect(dbNote.folderId).to.deep.equal(ObjectId(newNote.folderId));
-          expect(dbNote.tags).to.be.length(newNote.tags.length);
-          dbNote.tags.forEach((dbTag, index) => {
-            expect(dbTag).to.deep.equal(ObjectId(newNote.tags[index]));
-          });
+          compareNewNote(newNote, dbNote);
         });
     });      
 
