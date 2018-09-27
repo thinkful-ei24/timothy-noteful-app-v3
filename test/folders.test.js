@@ -179,6 +179,23 @@ describe('Folders API', function(){
           expect(res).to.have.status(400);
         });
     });
+
+    it('should return 400 if folder name already exists', function(){
+      
+      return Folder.findOne({ userId })
+        .then(folder => {
+          const newFolder = { name: folder.name };
+          
+          return chai.request(app)
+            .post('/api/folders')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newFolder);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+
+    });
   });
 
   describe('PUT folder endpoint', function(){
@@ -283,6 +300,21 @@ describe('Folders API', function(){
           expect(notes.length).to.equal(0);
         });
   
+    });
+
+    it('should return 404 for nonexistent id', function(){
+
+      return Folder.findOne({ userId: { $ne: ObjectId(userId) }})
+        .then(folder => {
+          const folderId = folder.id;
+          return chai.request(app)
+            .delete(`/api/folders/${folderId}`)
+            .set('Authorization', `Bearer ${token}`);
+        })
+        .then(res => {
+          expect(res).to.have.status(404);
+        });
+
     });
 
   });
