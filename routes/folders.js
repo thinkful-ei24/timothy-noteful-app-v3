@@ -70,16 +70,7 @@ router.put('/:id', validateParamId, validateFolderName, (req, res, next) => {
 
     })
     .catch(next);
-  // Folder.findByIdAndUpdate(
-  //   id, 
-  //   { $set: updatedFolder }, 
-  //   { new : true }
-  // )
-  //   .then(folder => {
-  //     if(!folder) return next(); 
-  //     else res.json(folder);
-  //   })
-  //   .catch(next);
+
 });
 
 router.delete('/:id', validateParamId, (req, res, next) => {

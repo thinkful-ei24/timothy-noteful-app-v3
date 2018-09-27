@@ -292,6 +292,16 @@ describe('Tags API', function(){
 
     });
 
+    it('should return 404 if id is non-existent', function(){
+      const nonexistentId = 'DOESNOTEXIST';
+
+      return chai.request(app)
+        .delete(`/api/tags/${nonexistentId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .then(res => {
+          expect(res).to.have.status(404);
+        });
+    });
     
     it('should return 400 if id is invalid', function(){
       const invalidId = 'invalid';

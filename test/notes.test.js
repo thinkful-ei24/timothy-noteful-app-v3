@@ -146,6 +146,41 @@ describe('Noteful API', function(){
 
     });
 
+    it('should return correct results if tag id is valid', function(){
+      let validTagId;
+
+      return Tag.findOne({ userId })
+        .then(tag => {
+          validTagId = tag.id;
+
+          const reqPromise = chai.request(app)
+            .get('/api/notes')
+            .query({ tagId: validTagId})
+            .set('Authorization', `Bearer ${token}`);
+
+          const queryPromise = Note.find({ userId, tags: validTagId });
+
+          return Promise.all([reqPromise, queryPromise]);
+        })
+        .then(([res, dbNotes]) => {
+          const resNotes = res.body;
+          expect(resNotes.length).to.be.at.least(1);
+          expect(resNotes.length).to.equal(dbNotes.length);
+          resNotes.forEach((resNote, index) => {
+            const dbNote = dbNotes[index];
+            expect(resNote.id).to.equal(dbNote.id);
+            expect(resNote.title).to.equal(dbNote.title);
+            expect(resNote.content).to.equal(dbNote.content);
+            expect(ObjectId(resNote.folderId)).to.deep.equal(dbNote.folderId);
+            expect(ObjectId(resNote.userId)).to.deep.equal(dbNote.userId);
+            resNote.tags.forEach((resTag, index) => {
+              const dbTag = dbNote.tags[index];
+              expect(ObjectId(resTag)).to.deep.equal(dbTag);
+            });
+          });
+        });
+    });
+
     it('should return an empty array for an incorrect search term', function(){
       const searchTerm = 'invalidsearchterm';
 
@@ -389,6 +424,43 @@ describe('Noteful API', function(){
             });
 
         });
+
+    });
+
+    it('should return 400 if tags is not an array', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId,
+        tags: 'NOTANARRAY'
+      };
+
+      return chai.request(app)
+        .post('/api/notes')
+        .send(newNote)
+        .set('Authorization', `Bearer ${token}`)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+
+    });
+
+    it('should return 400 if tag id is invalid', function(){
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId,
+        tags: ['INVALIDID']
+      };
+
+      return chai.request(app)
+        .post('/api/notes')
+        .send(newNote)
+        .set('Authorization', `Bearer ${token}`)
+        .then(res => {
+          expect(res).to.have.status(400);
+        });
+
 
     });
 
