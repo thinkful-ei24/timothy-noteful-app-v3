@@ -27,7 +27,7 @@ describe('Tags API', function(){
   before(function () {
     this.timeout(5000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
-      .then(() => mongoose.connection.db.dropDatabase());
+      .then(() => Promise.all([User.deleteMany(), Note.deleteMany(), Folder.deleteMany(), Tag.deleteMany()]));
   });
 
   beforeEach(function(){
@@ -36,9 +36,7 @@ describe('Tags API', function(){
       User.insertMany(users),
       Note.insertMany(notes),
       Folder.insertMany(folders),
-      Tag.insertMany(tags),
-      Folder.createIndexes(),
-      Tag.createIndexes()
+      Tag.insertMany(tags)
     ])
       .then(([ users ]) => {
         user = users[0];
@@ -48,7 +46,7 @@ describe('Tags API', function(){
   });
 
   afterEach(function () {
-    return mongoose.connection.db.dropDatabase();
+    return Promise.all([User.deleteMany(), Note.deleteMany(), Folder.deleteMany(), Tag.deleteMany()]);
   });
 
   after(function () {

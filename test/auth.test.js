@@ -17,7 +17,7 @@ describe('Auth Endpoints', function(){
   before(function(){
     this.timeout(5000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true })
-      .then(() => mongoose.connection.db.dropDatabase());
+      .then(() => User.deleteMany());
   });
   
   beforeEach(function(){
@@ -25,7 +25,7 @@ describe('Auth Endpoints', function(){
   });
 
   afterEach(function(){
-    return mongoose.connection.db.dropDatabase();
+    return User.deleteMany();
   });
 
   after(function(){

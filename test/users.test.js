@@ -20,16 +20,14 @@ describe('Noteful API - Users', function() {
     this.timeout(5000);
     return mongoose
       .connect(TEST_MONGODB_URI)
-      .then(() => mongoose.connection.db.dropDatabase());
+      .then(() => User.deleteMany());
   });
 
   beforeEach(function() {
-    this.timeout(5000);
-    return User.createIndexes();
   });
 
   afterEach(function() {
-    return mongoose.connection.db.dropDatabase();
+    return User.deleteMany();
   });
 
   after(function() {

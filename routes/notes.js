@@ -3,7 +3,7 @@
 const express = require('express');
 const Note = require('../models/note');
 const router = express.Router();
-const { validateParamId, validateFolderId, validateTags } = require('../middleware/validate-objectid');
+const { validateParamId, validateFolderAndTags } = require('../middleware/validate-id');
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -51,7 +51,7 @@ router.get('/:id', validateParamId, (req, res, next) => {
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
-router.post('/', validateFolderId, validateTags, (req, res, next) => {
+router.post('/', validateFolderAndTags, (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
 
@@ -75,7 +75,7 @@ router.post('/', validateFolderId, validateTags, (req, res, next) => {
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', validateParamId, validateFolderId, validateTags, (req, res, next) => {
+router.put('/:id', validateParamId, validateFolderAndTags, (req, res, next) => {
   const id = req.params.id;
   const userId = req.user.id;
 

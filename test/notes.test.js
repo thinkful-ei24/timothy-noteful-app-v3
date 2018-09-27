@@ -29,20 +29,18 @@ describe('Noteful API', function(){
 
   before(function () {
 
-    this.timeout(20000);
+    this.timeout(5000);
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser:true })
-      .then(() => mongoose.connection.db.dropDatabase());
+      .then(() => Promise.all([User.deleteMany(), Note.deleteMany(), Tag.deleteMany(), Folder.deleteMany()]));
   });
 
   beforeEach(function(){
-    this.timeout(10000);
+    this.timeout(4000);
     return Promise.all([
       User.insertMany(users),
       Note.insertMany(notes),
       Tag.insertMany(tags),
-      Folder.insertMany(folders),
-      Folder.createIndexes(),
-      Tag.createIndexes()
+      Folder.insertMany(folders)
     ])
       .then(([users]) => {
         user = users[0];
@@ -52,7 +50,7 @@ describe('Noteful API', function(){
   });
 
   afterEach(function () {
-    return mongoose.connection.db.dropDatabase();
+    return Promise.all([User.deleteMany(), Note.deleteMany(), Tag.deleteMany(), Folder.deleteMany()]);
   });
 
   after(function () {
@@ -399,7 +397,6 @@ describe('Noteful API', function(){
         })
         .then(res => {
           expect(res).to.have.status(400);
-          expect(res.body.message).to.equal('Invalid tag id');
         });
 
     });
